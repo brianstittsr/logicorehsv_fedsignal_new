@@ -236,7 +236,7 @@ export async function DELETE(request: NextRequest) {
       .get();
 
     const batch = adminDb.batch();
-    controlAssessments.docs.forEach((doc) => {
+    controlAssessments.docs.forEach((doc: any) => {
       batch.delete(doc.ref);
     });
 
