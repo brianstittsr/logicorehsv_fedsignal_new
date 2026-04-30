@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     }
 
     const snapshot = await query.get();
-    const findings = snapshot.docs.map((doc) => {
+    const findings = snapshot.docs.map((doc: any) => {
       const data = doc.data();
       const control = getControlById(data.controlId);
 

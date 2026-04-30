@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     }
 
     const snapshot = await query.get();
-    const poams = snapshot.docs.map((doc) => {
+    const poams = snapshot.docs.map((doc: any) => {
       const data = doc.data();
       const control = getControlById(data.controlId);
 
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
       .collection(COLLECTIONS.CMMC_POAMS || CMMC_COLLECTIONS.POAMS)
       .add({
         ...poamData,
-        scheduledCompletionDate: Timestamp.fromDate(new Date(scheduledCompletionDate)),
+        scheduledCompletionDate: new Date(scheduledCompletionDate),
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -216,16 +216,16 @@ export async function PUT(request: NextRequest) {
 
     // Convert dates to timestamps
     if (updates.scheduledCompletionDate) {
-      updates.scheduledCompletionDate = Timestamp.fromDate(new Date(updates.scheduledCompletionDate));
+      updates.scheduledCompletionDate = new Date(updates.scheduledCompletionDate);
     }
     if (updates.actualCompletionDate) {
-      updates.actualCompletionDate = Timestamp.fromDate(new Date(updates.actualCompletionDate));
+      updates.actualCompletionDate = new Date(updates.actualCompletionDate);
     }
     if (updates.milestones) {
       updates.milestones = updates.milestones.map((m: { targetDate?: string; completedDate?: string }) => ({
         ...m,
-        targetDate: m.targetDate ? Timestamp.fromDate(new Date(m.targetDate)) : undefined,
-        completedDate: m.completedDate ? Timestamp.fromDate(new Date(m.completedDate)) : undefined,
+        targetDate: m.targetDate ? new Date(m.targetDate) : undefined,
+        completedDate: m.completedDate ? new Date(m.completedDate) : undefined,
       }));
     }
 

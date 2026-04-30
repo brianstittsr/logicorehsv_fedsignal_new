@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     query = query.orderBy("createdAt", "desc");
 
     const snapshot = await query.get();
-    const assessments = snapshot.docs.map((doc) => ({
+    const assessments = snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
     }));

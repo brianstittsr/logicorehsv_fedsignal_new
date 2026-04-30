@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       .where("assessmentId", "==", assessmentId)
       .get();
 
-    const controlAssessments = snapshot.docs.map((doc) => {
+    const controlAssessments = snapshot.docs.map((doc: any) => {
       const data = doc.data() as ControlAssessment & { controlId: string };
       const controlDef = getControlById(data.controlId);
       

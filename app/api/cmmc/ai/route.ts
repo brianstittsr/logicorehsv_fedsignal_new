@@ -342,7 +342,7 @@ export async function POST_PRE_AUDIT(request: NextRequest) {
       .where("assessmentId", "==", assessmentId)
       .get();
 
-    const controlAssessments = controlAssessmentsSnapshot.docs.map((doc) => ({
+    const controlAssessments = controlAssessmentsSnapshot.docs.map((doc: any) => ({
       ...(doc.data() as ControlAssessment),
       id: doc.id,
     })) as ControlAssessment[];
