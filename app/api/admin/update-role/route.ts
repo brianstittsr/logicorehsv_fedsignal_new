@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
-import { Timestamp } from "firebase-admin/firestore";
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,7 +45,7 @@ export async function POST(request: NextRequest) {
       await teamMemberDoc.ref.update({
         role: role,
         isAffiliate: role === "affiliate",
-        updatedAt: Timestamp.now(),
+        updatedAt: new Date(),
       });
       teamMemberUpdated = true;
       console.log(`Updated Team Member ${teamMemberId} role to: ${role}`);
@@ -57,7 +56,7 @@ export async function POST(request: NextRequest) {
       await adminDb.collection(COLLECTIONS.USERS).doc(firebaseUid).update({
         role: role,
         isAffiliate: role === "affiliate",
-        updatedAt: Timestamp.now(),
+        updatedAt: new Date(),
       });
       userProfileUpdated = true;
       console.log(`Updated User Profile ${firebaseUid} role to: ${role}`);
@@ -72,7 +71,7 @@ export async function POST(request: NextRequest) {
         await userDoc.ref.update({
           role: role,
           isAffiliate: role === "affiliate",
-          updatedAt: Timestamp.now(),
+          updatedAt: new Date(),
         });
         userProfileUpdated = true;
         console.log(`Updated User Profile ${userDoc.id} role to: ${role}`);
