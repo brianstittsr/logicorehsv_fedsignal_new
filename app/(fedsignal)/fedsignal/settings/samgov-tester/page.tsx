@@ -27,6 +27,7 @@ interface SearchFilters {
 }
 
 export default function SamGovTesterPage() {
+  const [useProxy, setUseProxy] = useState(true);
   const [samApiKey, setSamApiKey] = useState("");
   const [connectionStatus, setConnectionStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
   const [connectionMessage, setConnectionMessage] = useState("");
@@ -51,32 +52,40 @@ export default function SamGovTesterPage() {
   const [llmInterpretation, setLlmInterpretation] = useState("");
 
   const testConnection = async () => {
-    if (!samApiKey) {
-      setConnectionMessage("Please enter a SAM.gov API key");
+    if (!useProxy && !samApiKey) {
+      setConnectionMessage("Please enter a SAM.gov API key or enable proxy mode");
       setConnectionStatus("error");
       return;
     }
 
     setConnectionStatus("testing");
-    setConnectionMessage("Testing connection to SAM.gov...");
+    setConnectionMessage(useProxy ? "Testing proxy connection to SAM.gov..." : "Testing connection to SAM.gov...");
 
     try {
       const today = new Date();
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
 
-      const response = await fetch(
-        `/api/samgov/test-connection?api_key=${samApiKey}&` +
-        `postedFrom=${formatDate(yesterday)}&` +
-        `postedTo=${formatDate(today)}&` +
-        `limit=1&offset=0`
-      );
+      const url = useProxy
+        ? `/api/samgov/test-connection?` +
+          `postedFrom=${formatDate(yesterday)}&` +
+          `postedTo=${formatDate(today)}&` +
+          `limit=1&offset=0`
+        : `/api/samgov/test-connection?api_key=${samApiKey}&` +
+          `postedFrom=${formatDate(yesterday)}&` +
+          `postedTo=${formatDate(today)}&` +
+          `limit=1&offset=0`;
 
+      const response = await fetch(url);
       const data = await response.json();
 
       if (data.success) {
         setConnectionStatus("success");
-        setConnectionMessage(`✓ Connected successfully! Found ${data.totalRecords || 0} opportunities.`);
+        setConnectionMessage(
+          useProxy
+            ? `✓ Proxy connected successfully! Found ${data.totalRecords || 0} opportunities.`
+            : `✓ Connected successfully! Found ${data.totalRecords || 0} opportunities.`
+        );
       } else {
         setConnectionStatus("error");
         setConnectionMessage(`✗ Connection failed: ${data.error || "Unknown error"}`);
@@ -151,7 +160,7 @@ export default function SamGovTesterPage() {
         filters: filtersWithDates,
         limit: 25,
         offset: 0,
-        apiKey: samApiKey,
+        apiKey: useProxy ? undefined : samApiKey,
       }),
     });
 
@@ -195,17 +204,32 @@ export default function SamGovTesterPage() {
           <h2 className="text-lg font-semibold text-slate-900 mb-4">1. API Connection Test</h2>
           
           <div className="space-y-4">
+            {/* Proxy Mode Toggle */}
+            <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <input
+                type="checkbox"
+                id="useProxy"
+                checked={useProxy}
+                onChange={(e) => setUseProxy(e.target.checked)}
+                className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded"
+              />
+              <label htmlFor="useProxy" className="flex-1 text-sm text-blue-900">
+                <strong>Use Proxy Mode</strong> - Search without entering an API key (uses server-side environment variable)
+              </label>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                SAM.gov API Key
+                SAM.gov API Key {useProxy && <span className="text-xs text-slate-500">(Optional in proxy mode)</span>}
               </label>
               <div className="flex gap-3">
                 <input
                   type="password"
                   value={samApiKey}
                   onChange={(e) => setSamApiKey(e.target.value)}
-                  placeholder="Enter your SAM.gov API key"
-                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder={useProxy ? "Optional - using proxy" : "Enter your SAM.gov API key"}
+                  disabled={useProxy}
+                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-100 disabled:text-slate-500"
                 />
                 <button
                   onClick={testConnection}
@@ -382,7 +406,7 @@ export default function SamGovTesterPage() {
                 />
                 <button
                   onClick={handleSearch}
-                  disabled={searching || !samApiKey}
+                  disabled={searching || (!useProxy && !samApiKey)}
                   className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {searching ? (
@@ -433,7 +457,7 @@ export default function SamGovTesterPage() {
                   </select>
                   <button
                     onClick={handleSearch}
-                    disabled={searching || !samApiKey}
+                    disabled={searching || (!useProxy && !samApiKey)}
                     className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {searching ? (

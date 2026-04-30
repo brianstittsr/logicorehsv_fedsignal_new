@@ -9,9 +9,12 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get("limit") || "1";
     const offset = searchParams.get("offset") || "0";
 
-    if (!apiKey) {
+    // Use provided API key or fall back to environment variable (proxy mode)
+    const effectiveApiKey = apiKey || process.env.SAM_API_KEY;
+
+    if (!effectiveApiKey) {
       return NextResponse.json(
-        { success: false, error: "API key is required" },
+        { success: false, error: "API key is required (provide one or set SAM_API_KEY environment variable)" },
         { status: 400 }
       );
     }
@@ -24,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     const queryParams = new URLSearchParams({
-      api_key: apiKey,
+      api_key: effectiveApiKey,
       limit,
       offset,
       postedFrom,
@@ -56,6 +59,7 @@ export async function GET(request: NextRequest) {
       success: true,
       totalRecords: data.totalRecords || 0,
       message: "Connection successful",
+      usingProxy: !apiKey, // Indicate if using proxy mode
     });
   } catch (error) {
     console.error("Test connection error:", error);
