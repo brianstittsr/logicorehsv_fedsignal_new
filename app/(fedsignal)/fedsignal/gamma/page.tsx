@@ -87,17 +87,29 @@ const MOCK_SLIDES = [
   },
 ];
 
+// ─── Types ──────────────────────────────────────────────────────────────────────
+interface Slide {
+  id: string;
+  title: string;
+  type: string;
+  thumbnail: string;
+  subtitle?: string;
+  stats?: { label: string; value: string }[];
+  bullets?: string[];
+  content?: string;
+}
+
 export default function GammaDeckPage() {
   const [activeTemplate, setActiveTemplate] = useState("capability");
   const [deckName, setDeckName] = useState("Tuskegee University Capability Deck 2025");
-  const [slides, setSlides] = useState(MOCK_SLIDES);
+  const [slides, setSlides] = useState<Slide[]>(MOCK_SLIDES);
   const [activeSlide, setActiveSlide] = useState("1");
   const [aiPrompt, setAiPrompt] = useState("Research presentation about HBCU federal contracting success, professional corporate style");
   const [aiStyle, setAiStyle] = useState("Corporate Professional");
   const [exportFormat, setExportFormat] = useState("pdf");
 
   const addSlide = (type: string) => {
-    const newSlide = {
+    const newSlide: Slide = {
       id: Math.random().toString(36).substr(2, 9),
       title: "New Slide",
       type,
