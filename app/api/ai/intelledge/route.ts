@@ -100,7 +100,7 @@ async function fetchCollectionData(collectionName: string, maxItems = 50): Promi
     }
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
+    return snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
       // Convert Timestamps to strings for JSON serialization

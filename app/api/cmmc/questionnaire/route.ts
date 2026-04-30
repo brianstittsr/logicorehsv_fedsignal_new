@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       .where("assessmentId", "==", assessmentId)
       .get();
 
-    const responses = snapshot.docs.map(doc => ({
+    const responses = snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
     }));

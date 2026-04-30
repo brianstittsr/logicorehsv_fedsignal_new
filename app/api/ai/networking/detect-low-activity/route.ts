@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch all affiliate stats
     const statsSnapshot = await getDocs(collection(db, COLLECTIONS.AFFILIATE_STATS));
-    const allStats = statsSnapshot.docs.map(doc => ({
+    const allStats = statsSnapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data()
     } as any));
@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
       )
     );
 
-    const alerts = alertsSnapshot.docs.map(doc => ({
+    const alerts = alertsSnapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
     }));
