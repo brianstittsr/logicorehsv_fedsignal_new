@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         .where("proposalId", "==", proposalId)
         .get();
       const batch = adminDb.batch();
-      sigSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      sigSnapshot.docs.forEach((doc: any) => batch.delete(doc.ref));
       if (!sigSnapshot.empty) await batch.commit();
     } catch (err) {
       console.warn("Could not delete linked signature docs:", err);

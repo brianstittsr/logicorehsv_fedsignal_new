@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     const snapshot = await getDocs(q);
-    let meetings: FathomMeetingDoc[] = snapshot.docs.map((doc) => ({
+    let meetings: FathomMeetingDoc[] = snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
     })) as FathomMeetingDoc[];

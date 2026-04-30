@@ -50,7 +50,7 @@ export async function GET() {
       snapshot = await getDocs(webinarsRef);
     }
 
-    const webinars = snapshot.docs.map((doc) => {
+    const webinars = snapshot.docs.map((doc: any) => {
       const data = doc.data() as WebinarDoc;
       return {
         id: doc.id,

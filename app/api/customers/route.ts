@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     const snapshot = await getDocs(q);
-    let customers: CustomerDoc[] = snapshot.docs.map((doc) => ({
+    let customers: CustomerDoc[] = snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
     })) as CustomerDoc[];

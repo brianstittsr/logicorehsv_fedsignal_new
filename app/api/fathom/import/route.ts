@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
     const meetingsRef = collection(db, COLLECTIONS.FATHOM_MEETINGS);
     const existingSnapshot = await getDocs(meetingsRef);
     const existingFathomIds = new Set(
-      existingSnapshot.docs.map((doc) => doc.data().fathomMeetingId)
+      existingSnapshot.docs.map((doc: any) => doc.data().fathomMeetingId)
     );
 
     // Import meetings to Firebase

@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     );
 
     const recentPartnerIds = new Set(
-      recentMeetingsSnapshot.docs.map((doc) => doc.data().partnerId)
+      recentMeetingsSnapshot.docs.map((doc: any) => doc.data().partnerId)
     );
 
     // Get existing pending suggestions to avoid duplicates
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     );
 
     const existingSuggestedIds = new Set(
-      existingSuggestionsSnapshot.docs.map((doc) => doc.data().suggestedPartnerId)
+      existingSuggestionsSnapshot.docs.map((doc: any) => doc.data().suggestedPartnerId)
     );
 
     // Calculate match scores for each potential partner

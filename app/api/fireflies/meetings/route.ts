@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     const snapshot = await getDocs(q);
-    let meetings: FirefliesMeetingDoc[] = snapshot.docs.map((doc) => ({
+    let meetings: FirefliesMeetingDoc[] = snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
     })) as FirefliesMeetingDoc[];

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const q = status ? query(col, where("status", "==", status)) : query(col);
     const snapshot = await getDocs(q);
 
-    const teamMembers = snapshot.docs.map((doc) => ({
+    const teamMembers = snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
     }));

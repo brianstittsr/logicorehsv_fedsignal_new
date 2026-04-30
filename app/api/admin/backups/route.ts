@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     );
 
     const snapshot = await getDocs(q);
-    let backups = snapshot.docs.map((doc) => ({
+    let backups = snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
       createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null,
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         const collectionRef = collection(db, collectionName);
         const snapshot = await getDocs(collectionRef);
         
-        backupData[collectionName] = snapshot.docs.map((doc) => ({
+        backupData[collectionName] = snapshot.docs.map((doc: any) => ({
           id: doc.id,
           ...doc.data(),
         }));

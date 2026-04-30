@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
     const meetingsRef = collection(db, COLLECTIONS.FIREFLIES_MEETINGS);
     const existingSnapshot = await getDocs(meetingsRef);
     const existingFirefliesIds = new Set(
-      existingSnapshot.docs.map((doc) => doc.data().firefliesMeetingId)
+      existingSnapshot.docs.map((doc: any) => doc.data().firefliesMeetingId)
     );
 
     // Import meetings to Firebase

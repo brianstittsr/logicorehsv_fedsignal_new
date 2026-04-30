@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
         getDocs(receivedQuery),
       ]);
 
-      const given = givenSnapshot.docs.map((doc) => ({
+      const given = givenSnapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data(),
         direction: "given",
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
         dealClosedDate: doc.data().dealClosedDate?.toDate?.()?.toISOString(),
       }));
 
-      const received = receivedSnapshot.docs.map((doc) => ({
+      const received = receivedSnapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data(),
         direction: "received",
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
     }
 
     const snapshot = await getDocs(referralsQuery);
-    const referrals = snapshot.docs.map((doc) => ({
+    const referrals = snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
       direction: type,

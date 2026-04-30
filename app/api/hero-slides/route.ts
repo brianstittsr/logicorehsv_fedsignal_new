@@ -24,7 +24,7 @@ export async function GET() {
     const q = query(slidesRef, orderBy("order", "asc"));
     const snapshot = await getDocs(q);
 
-    const slides = snapshot.docs.map((doc) => ({
+    const slides = snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data(),
     }));

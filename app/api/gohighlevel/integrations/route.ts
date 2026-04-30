@@ -32,7 +32,7 @@ export async function GET() {
     }
 
     const snapshot = await getDocs(collection(db, COLLECTIONS.GHL_INTEGRATIONS));
-    const integrations = snapshot.docs.map((doc) => {
+    const integrations = snapshot.docs.map((doc: any) => {
       const data = doc.data() as GHLIntegrationDoc;
       return serializeIntegration({ ...data, id: doc.id });
     });
