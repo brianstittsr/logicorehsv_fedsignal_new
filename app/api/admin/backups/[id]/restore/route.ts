@@ -132,7 +132,7 @@ export async function POST(
       }
     }
 
-    const totalRestored = Object.values(restoredCounts).reduce((a, b) => a + b, 0);
+    const totalRestored = Object.values(restoredCounts).reduce((a: number, b: number) => a + b, 0);
 
     return NextResponse.json({
       success: errors.length === 0,

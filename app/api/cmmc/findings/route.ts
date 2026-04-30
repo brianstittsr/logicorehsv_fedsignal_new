@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Sort in-memory to avoid requiring a composite Firestore index
-    findings.sort((a, b) => {
+    findings.sort((a: any, b: any) => {
       const aData = a as Record<string, any>;
       const bData = b as Record<string, any>;
       const aTime = aData.identifiedAt?.toMillis?.() ?? aData.identifiedAt?.seconds ?? 0;

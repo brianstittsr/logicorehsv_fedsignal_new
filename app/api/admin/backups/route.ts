@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       backup: metadata,
-      message: `Backup created successfully with ${Object.values(documentCounts).reduce((a, b) => a + b, 0)} documents`,
+      message: `Backup created successfully with ${Object.values(documentCounts).reduce((a: number, b: number) => a + b, 0)} documents`,
     });
   } catch (error) {
     console.error("Create backup error:", error);

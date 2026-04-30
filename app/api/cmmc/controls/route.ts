@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Sort by control ID
-    controlAssessments.sort((a, b) => a.controlId.localeCompare(b.controlId));
+    controlAssessments.sort((a: any, b: any) => a.controlId.localeCompare(b.controlId));
 
     return NextResponse.json({ controlAssessments });
   } catch (error) {

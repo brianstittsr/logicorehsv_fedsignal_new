@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Sort in-memory to avoid requiring a composite Firestore index
-    poams.sort((a, b) => {
+    poams.sort((a: any, b: any) => {
       const aData = a as Record<string, any>;
       const bData = b as Record<string, any>;
       const aTime = aData.createdAt?.toMillis?.() ?? aData.createdAt?.seconds ?? 0;

@@ -198,8 +198,8 @@ export async function GET(request: NextRequest) {
       duration: `${duration}ms`,
       results,
       summary: {
-        totalNotifications: results.reduce((sum, r) => sum + r.count, 0),
-        checks: results.map((r) => ({ type: r.type, count: r.count })),
+        totalNotifications: results.reduce((sum: number, r: any) => sum + r.count, 0),
+        checks: results.map((r: any) => ({ type: r.type, count: r.count })),
       },
     });
   } catch (error) {
@@ -251,8 +251,8 @@ export async function POST(request: NextRequest) {
       duration: `${duration}ms`,
       results,
       summary: {
-        totalNotifications: results.reduce((sum, r) => sum + r.count, 0),
-        checks: results.map((r) => ({ type: r.type, count: r.count })),
+        totalNotifications: results.reduce((sum: number, r: any) => sum + r.count, 0),
+        checks: results.map((r: any) => ({ type: r.type, count: r.count })),
       },
     });
   } catch (error) {
