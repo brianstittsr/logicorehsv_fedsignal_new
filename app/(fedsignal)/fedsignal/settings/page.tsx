@@ -4,13 +4,15 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   Settings, Puzzle, Cpu, Globe, Bell, Link2, Eye, Navigation,
-  CheckCircle, AlertCircle, Save, ChevronRight, Power, Database
+  CheckCircle, AlertCircle, Save, ChevronRight, Power, Database, Search
 } from "lucide-react";
+import Link from "next/link";
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────────
 const TABS = [
   { id: "integrations", label: "Integrations", icon: Puzzle },
   { id: "llm", label: "LLM Configuration", icon: Cpu },
+  { id: "samgov-tester", label: "SAM.gov Tester", icon: Search },
   { id: "webhooks", label: "Webhooks", icon: Globe },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "links", label: "Social Links", icon: Link2 },
@@ -384,8 +386,50 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* ─── SAM.gov Tester Tab ─── */}
+      {activeTab === "samgov-tester" && (
+        <div className="bg-white border border-[#e2e8f0] rounded-xl shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#f1f5f9]">
+            <div className="flex items-center gap-2 mb-1">
+              <Search className="h-4 w-4 text-[#1a56db]" />
+              <h3 className="text-[13px] font-bold text-[#0f172a]">SAM.gov API Tester</h3>
+            </div>
+            <p className="text-[11px] text-[#64748b]">Test your SAM.gov connection and search capabilities with LLM-powered natural language queries</p>
+          </div>
+          
+          <div className="p-8 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="h-8 w-8 text-indigo-600" />
+              </div>
+              <h4 className="text-[14px] font-semibold text-[#334155] mb-2">SAM.gov API Testing Tool</h4>
+              <p className="text-[12px] text-[#64748b] mb-6">
+                Test your SAM.gov API connection, perform searches, and experiment with natural language queries powered by various LLM providers (OpenAI, Claude, Ollama, LM Studio).
+              </p>
+              <Link
+                href="/fedsignal/settings/samgov-tester"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white text-[12px] font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <Search className="h-4 w-4" />
+                Open SAM.gov Tester
+              </Link>
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-left">
+                <h5 className="text-[11px] font-semibold text-blue-700 mb-2">Features:</h5>
+                <ul className="text-[10px] text-blue-600 space-y-1">
+                  <li>• Test SAM.gov API connectivity</li>
+                  <li>• Structured search with advanced filters</li>
+                  <li>• Natural language search with LLM interpretation</li>
+                  <li>• Support for multiple LLM providers</li>
+                  <li>• Real-time search results</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Other Tabs (Placeholders) ─── */}
-      {!["integrations", "llm", "navigation"].includes(activeTab) && (
+      {!["integrations", "llm", "navigation", "samgov-tester"].includes(activeTab) && (
         <div className="bg-white border border-[#e2e8f0] rounded-xl shadow-sm p-8">
           <div className="text-center">
             <Settings className="h-12 w-12 text-[#e2e8f0] mx-auto mb-3" />

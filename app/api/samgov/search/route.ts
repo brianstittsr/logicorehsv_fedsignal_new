@@ -4,9 +4,12 @@ import { createSamApiClient } from "@/lib/sam-api-client";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { filters = {}, limit = 10, offset = 0 } = body;
+    const { filters = {}, limit = 10, offset = 0, apiKey } = body;
 
-    const client = createSamApiClient();
+    // Use provided API key for testing, otherwise use environment variable
+    const client = apiKey 
+      ? new (require("@/lib/sam-api-client").SamApiClient)(apiKey)
+      : createSamApiClient();
     
     const searchParams = {
       limit,
