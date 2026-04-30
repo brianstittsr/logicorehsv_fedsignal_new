@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
-import { Timestamp } from "firebase-admin/firestore";
 
 export async function POST(request: NextRequest) {
   try {

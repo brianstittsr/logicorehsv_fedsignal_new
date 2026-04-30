@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { CMMC_COLLECTIONS } from "@/lib/types/cmmc";
-import { Timestamp } from "firebase-admin/firestore";
 
 /**
  * GET /api/cmmc/questionnaire?assessmentId=xxx
@@ -56,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     const batch = adminDb.batch();
-    const now = Timestamp.now();
+    const now = new Date();
 
     for (const { questionId, answer, notes } of responses) {
       if (!questionId) continue;

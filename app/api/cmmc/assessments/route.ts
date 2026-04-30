@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
-import { Timestamp, Query } from "firebase-admin/firestore";
 import { 
   SystemAssessment, 
   CMMC_COLLECTIONS,
@@ -49,7 +48,7 @@ export async function GET(request: NextRequest) {
     }
 
     // List assessments with optional filter
-    let query: Query = adminDb.collection(
+    let query: any = adminDb.collection(
       COLLECTIONS.CMMC_ASSESSMENTS || CMMC_COLLECTIONS.ASSESSMENTS
     );
 
@@ -139,8 +138,8 @@ export async function POST(request: NextRequest) {
       .collection(COLLECTIONS.CMMC_ASSESSMENTS || CMMC_COLLECTIONS.ASSESSMENTS)
       .add({
         ...assessmentData,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
     // Initialize control assessments for the target CMMC level
@@ -187,7 +186,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Add updated timestamp
-    updates.updatedAt = Timestamp.now();
+    updates.updatedAt = new Date();
 
     await adminDb
       .collection(COLLECTIONS.CMMC_ASSESSMENTS || CMMC_COLLECTIONS.ASSESSMENTS)
@@ -291,7 +290,7 @@ async function initializeControlAssessments(
 
     batch.set(docRef, {
       ...controlAssessment,
-      updatedAt: Timestamp.now(),
+      updatedAt: new Date(),
     });
   }
 

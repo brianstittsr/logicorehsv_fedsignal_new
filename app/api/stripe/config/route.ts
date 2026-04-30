@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
 
 const SETTINGS_DOC = "stripe_config";
 const SETTINGS_COLLECTION = "platformSettings";
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     const docRef = adminDb.collection(SETTINGS_COLLECTION).doc(SETTINGS_DOC);
     await docRef.set(
-      { mode, updatedAt: FieldValue.serverTimestamp() },
+      { mode, updatedAt: new Date() },
       { merge: true }
     );
 

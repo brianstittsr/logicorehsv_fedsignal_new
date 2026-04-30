@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
-import { Timestamp } from "firebase-admin/firestore";
 
 export const runtime = "nodejs";
 
@@ -65,7 +64,7 @@ export async function POST(request: NextRequest) {
       countersignedBy: null,
       countersignedAt: null,
       signatureSubmissionId: null,
-      updatedAt: Timestamp.now(),
+      updatedAt: new Date(),
     });
 
     return NextResponse.json({ success: true, message: "Signature reset. Proposal is now a draft." });

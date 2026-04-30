@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
-import { Timestamp } from "firebase-admin/firestore";
 import { CMMC_COLLECTIONS, Finding, POAM, POAMStatus } from "@/lib/types/cmmc";
 import { getControlById } from "@/lib/data/nist-controls";
 
@@ -151,8 +150,8 @@ export async function POST(request: NextRequest) {
       .collection(COLLECTIONS.CMMC_FINDINGS || CMMC_COLLECTIONS.FINDINGS)
       .add({
         ...findingData,
-        identifiedAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
+        identifiedAt: new Date(),
+        updatedAt: new Date(),
       });
 
     // Update control assessment to mark hasFinding
@@ -163,7 +162,7 @@ export async function POST(request: NextRequest) {
         .update({
           hasFinding: true,
           findingId: docRef.id,
-          updatedAt: Timestamp.now(),
+          updatedAt: new Date(),
         });
     }
 
@@ -207,7 +206,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    updates.updatedAt = Timestamp.now();
+    updates.updatedAt = new Date();
 
     await adminDb
       .collection(COLLECTIONS.CMMC_FINDINGS || CMMC_COLLECTIONS.FINDINGS)
@@ -281,7 +280,7 @@ export async function DELETE(request: NextRequest) {
         .update({
           hasFinding: false,
           findingId: null,
-          updatedAt: Timestamp.now(),
+          updatedAt: new Date(),
         });
     }
 

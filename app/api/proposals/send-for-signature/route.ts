@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
-import { Timestamp } from "firebase-admin/firestore";
 
 export const runtime = 'nodejs';
 
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
         message: message || "",
         proposalHtml,
         status: "pending",
-        createdAt: Timestamp.now(),
+        createdAt: new Date(),
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         signedAt: null,
         signatureData: null,

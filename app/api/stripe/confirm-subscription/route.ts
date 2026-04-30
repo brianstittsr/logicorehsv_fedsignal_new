@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
-import { Timestamp } from "firebase-admin/firestore";
 
 function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -92,8 +91,8 @@ export async function POST(request: NextRequest) {
           stripeSubscriptionId: subscription.id,
           stripePaymentMethodId: paymentMethodId,
           subscriptionStatus: "active",
-          subscriptionCreatedAt: Timestamp.now(),
-          updatedAt: Timestamp.now(),
+          subscriptionCreatedAt: new Date(),
+          updatedAt: new Date(),
         });
       } catch (dbError) {
         console.error("Failed to update signing request with subscription:", dbError);

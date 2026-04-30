@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
-import { Timestamp } from "firebase-admin/firestore";
 
 // Vercel redeploy trigger - Firebase Admin env vars now configured
 
@@ -134,7 +133,7 @@ export async function POST(request: NextRequest) {
     // Convert HTML to base64 for storage
     const signedPdfBase64 = Buffer.from(signedPdfHtml, "utf-8").toString("base64");
 
-    const signedAtTimestamp = Timestamp.now();
+    const signedAtTimestamp = new Date();
 
     // Update the signing request in Firestore using Admin SDK
     await sigDoc.ref.update({
@@ -145,7 +144,7 @@ export async function POST(request: NextRequest) {
       signerCompany: signerCompany || "",
       signatureData,
       signedPdfBase64,
-      signedPdfGeneratedAt: Timestamp.now(),
+      signedPdfGeneratedAt: new Date(),
       signerIp: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
       countersignedBy: "Nelinia Varenas",
       countersignedAt: signedAtTimestamp,
@@ -165,7 +164,7 @@ export async function POST(request: NextRequest) {
           signatureId: sigDoc.id,
           countersignedBy: "Nelinia Varenas",
           countersignedAt: signedAtTimestamp,
-          updatedAt: Timestamp.now(),
+          updatedAt: new Date(),
         });
         console.log(`Proposal ${data.proposalId} updated with signatureId ${sigDoc.id}`);
       } catch (proposalUpdateError) {

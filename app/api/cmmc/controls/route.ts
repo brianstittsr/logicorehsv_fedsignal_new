@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
-import { Timestamp } from "firebase-admin/firestore";
 import { 
   ControlAssessment,
   CMMC_COLLECTIONS,
@@ -152,7 +151,7 @@ export async function POST(request: NextRequest) {
       .doc(controlAssessmentId)
       .update({
         ...updates,
-        updatedAt: Timestamp.now(),
+        updatedAt: new Date(),
       });
 
     return NextResponse.json({
@@ -201,7 +200,7 @@ export async function PUT(request: NextRequest) {
         .doc(update.controlAssessmentId);
 
       const { controlAssessmentId, ...updateData } = update;
-      updateData.updatedAt = Timestamp.now();
+      updateData.updatedAt = new Date();
 
       batch.update(docRef, updateData);
     }

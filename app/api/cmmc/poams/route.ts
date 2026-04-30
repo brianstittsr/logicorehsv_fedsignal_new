@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
-import { Timestamp } from "firebase-admin/firestore";
 import { CMMC_COLLECTIONS, POAM, POAMStatus } from "@/lib/types/cmmc";
 import { getControlById } from "@/lib/data/nist-controls";
 
@@ -160,8 +159,8 @@ export async function POST(request: NextRequest) {
       .add({
         ...poamData,
         scheduledCompletionDate: Timestamp.fromDate(new Date(scheduledCompletionDate)),
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
     // Update finding with POAM link
@@ -171,7 +170,7 @@ export async function POST(request: NextRequest) {
         .doc(findingId)
         .update({
           poamId: docRef.id,
-          updatedAt: Timestamp.now(),
+          updatedAt: new Date(),
         });
     }
 
@@ -230,7 +229,7 @@ export async function PUT(request: NextRequest) {
       }));
     }
 
-    updates.updatedAt = Timestamp.now();
+    updates.updatedAt = new Date();
 
     await adminDb
       .collection(COLLECTIONS.CMMC_POAMS || CMMC_COLLECTIONS.POAMS)
@@ -295,7 +294,7 @@ export async function DELETE(request: NextRequest) {
         .doc(poam.findingId)
         .update({
           poamId: null,
-          updatedAt: Timestamp.now(),
+          updatedAt: new Date(),
         });
     }
 

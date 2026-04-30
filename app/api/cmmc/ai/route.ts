@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/schema";
-import { Timestamp } from "firebase-admin/firestore";
 import { CMMC_COLLECTIONS, SystemAssessment, Finding, ControlAssessment } from "@/lib/types/cmmc";
 import { 
   generateControlAnalysis, 
@@ -367,8 +366,8 @@ export async function POST_PRE_AUDIT(request: NextRequest) {
         type: 'pre_audit',
         status: 'completed',
         result: auditResult,
-        createdAt: Timestamp.now(),
-        completedAt: Timestamp.now(),
+        createdAt: new Date(),
+        completedAt: new Date(),
       });
 
     return NextResponse.json({
