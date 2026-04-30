@@ -104,6 +104,7 @@ Logicore_FedSignalHBCU2-main/
 ### Intelligence
 - **Command Center** - Real-time dashboard with opportunity pipeline, alerts, and key metrics
 - **Opportunity Feed** - Live SAM.gov + Grants.gov opportunities with AI matching
+- **SAM.gov Search** - AI-powered natural language search for federal contract opportunities with advanced filters
 - **FedSignal Radar** - Trending topics, agency focus areas, emerging opportunities
 - **Strategic Alerts** - Policy changes, deadline warnings, competitive moves
 - **National Labs** - DOE lab intelligence, proximity mapping, partnership opportunities

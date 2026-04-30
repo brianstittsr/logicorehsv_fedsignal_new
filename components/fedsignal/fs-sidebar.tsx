@@ -27,6 +27,7 @@ const navSections: NavSection[] = [
     items: [
       { id: "dashboard", label: "Command Center", icon: "⬡", href: "/fedsignal" },
       { id: "opportunities", label: "Opportunity Feed", icon: "📡", badge: "47", href: "/fedsignal/opportunities" },
+      { id: "samgov", label: "SAM.gov Search", icon: "🔍", badge: "AI", href: "/fedsignal/samgov" },
       { id: "radar", label: "FedSignal", icon: "📊", href: "/fedsignal/radar" },
       { id: "alerts", label: "Strategic Alerts", icon: "🔔", badge: "6", badgeColor: "red", href: "/fedsignal/alerts" },
       { id: "nationallabs", label: "National Labs", icon: "🔬", badge: "17 Labs", href: "/fedsignal/nationallabs" },
