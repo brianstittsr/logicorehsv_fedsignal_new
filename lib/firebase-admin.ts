@@ -8,8 +8,11 @@
  * - Accessing Firestore with admin privileges
  */
 
+// @ts-ignore - firebase-admin types issue with package.json exports
 import { initializeApp, getApps, cert, App } from "firebase-admin/app";
+// @ts-ignore - firebase-admin types issue with package.json exports
 import { getAuth, Auth } from "firebase-admin/auth";
+// @ts-ignore - firebase-admin types issue with package.json exports
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 
 let adminApp: App | null = null;
