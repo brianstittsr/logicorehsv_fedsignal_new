@@ -23,6 +23,15 @@ const capabilities: Capability[] = [
   { id: "4", name: "Renewable Energy Systems", category: "Energy", strength: 78, projects: 5, funding: "$2.4M", tags: ["Solar", "Grid Modernization"] },
   { id: "5", name: "Advanced Materials", category: "Engineering", strength: 76, projects: 4, funding: "$1.9M", tags: ["Nanomaterials", "Composites"] },
   { id: "6", name: "Data Science & Analytics", category: "Technology", strength: 90, projects: 10, funding: "$3.7M", tags: ["Big Data", "Predictive Analytics"] },
+  { id: "7", name: "Aerospace Engineering", category: "Engineering", strength: 94, projects: 15, funding: "$8.5M", tags: ["Propulsion", "Avionics", "Flight Dynamics"] },
+  { id: "8", name: "Agricultural Sciences", category: "Agriculture", strength: 82, projects: 7, funding: "$2.8M", tags: ["Crop Science", "Sustainable Farming", "Food Security"] },
+  { id: "9", name: "Environmental Engineering", category: "Environment", strength: 80, projects: 6, funding: "$3.2M", tags: ["Water Treatment", "Air Quality", "Waste Management"] },
+  { id: "10", name: "Robotics & Automation", category: "Technology", strength: 86, projects: 9, funding: "$4.5M", tags: ["Industrial Robotics", "AI Control", "Sensors"] },
+  { id: "11", name: "Public Health Research", category: "Health", strength: 91, projects: 14, funding: "$7.2M", tags: ["Epidemiology", "Health Policy", "Community Health"] },
+  { id: "12", name: "Quantum Computing", category: "Technology", strength: 75, projects: 3, funding: "$1.5M", tags: ["Quantum Algorithms", "Quantum Hardware", "Cryptography"] },
+  { id: "13", name: "Marine Science & Oceanography", category: "Science", strength: 79, projects: 5, funding: "$2.6M", tags: ["Marine Biology", "Oceanography", "Coastal Research"] },
+  { id: "14", name: "Social Sciences Research", category: "Social", strength: 87, projects: 11, funding: "$4.1M", tags: ["Sociology", "Psychology", "Education"] },
+  { id: "15", name: "Transportation Engineering", category: "Engineering", strength: 83, projects: 7, funding: "$3.8M", tags: ["Traffic Systems", "Logistics", "Smart Cities"] },
 ];
 
 const naicsCodes = [
@@ -31,6 +40,16 @@ const naicsCodes = [
   { code: "541720", title: "R&D in Social Sciences", relevance: 88 },
   { code: "622110", title: "General Medical & Surgical Hospitals", relevance: 85 },
   { code: "611310", title: "Universities", relevance: 100 },
+  { code: "541715", title: "R&D in Life Sciences", relevance: 94 },
+  { code: "541690", title: "Other Scientific and Technical Consulting", relevance: 89 },
+  { code: "541330", title: "Engineering Services", relevance: 91 },
+  { code: "541512", title: "Computer Systems Design Services", relevance: 93 },
+  { code: "541611", title: "Administrative Management Services", relevance: 78 },
+  { code: "541714", title: "R&D in Biotechnology", relevance: 96 },
+  { code: "541519", title: "Other Computer Related Services", relevance: 87 },
+  { code: "541711", title: "R&D in Biotechnology", relevance: 97 },
+  { code: "541713", title: "R&D in Electrical Engineering", relevance: 90 },
+  { code: "541930", title: "Translation and Interpretation", relevance: 72 },
 ];
 
 export default function CapabilitiesPage() {

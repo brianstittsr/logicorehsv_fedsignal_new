@@ -7,9 +7,9 @@ import { universityList } from "@/lib/fedsignal/utils";
 import { AuthGuard } from "@/components/portal/auth-guard";
 
 export default function FedSignalLayout({ children }: { children: React.ReactNode }) {
-  const [universityId, setUniversityId] = useState("tuskegee");
+  const [universityId, setUniversityId] = useState("huston-tillotson");
 
-  const universityName = universityList.find((u) => u.value === universityId)?.label || "Tuskegee University";
+  const universityName = universityList.find((u) => u.value === universityId)?.label || "Huston-Tillotson University";
 
   return (
     <AuthGuard>
