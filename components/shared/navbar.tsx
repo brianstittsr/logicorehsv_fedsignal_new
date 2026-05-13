@@ -111,6 +111,13 @@ export function Navbar() {
               <NavigationMenuLink asChild className={cn(
                 "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
               )}>
+                <Link href="/pricing">Pricing</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild className={cn(
+                "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+              )}>
                 <Link href="/contact">Contact</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -123,10 +130,10 @@ export function Navbar() {
             <Link href="/sign-in">Sign In</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/sign-up">Sign Up</Link>
+            <Link href="/pricing">Pricing</Link>
           </Button>
-          <Button asChild>
-            <Link href="/contact">Contact Us</Link>
+          <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+            <Link href="/fedsignal/register">Get Started Free</Link>
           </Button>
         </div>
 
@@ -143,6 +150,13 @@ export function Navbar() {
               {/* Services, Company, Resources hidden per request */}
               <div className="space-y-2">
                 <Link
+                  href="/pricing"
+                  className="block py-2 font-medium"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Pricing
+                </Link>
+                <Link
                   href="/contact"
                   className="block py-2 font-medium"
                   onClick={() => setMobileOpen(false)}
@@ -158,13 +172,13 @@ export function Navbar() {
                   </Link>
                 </Button>
                 <Button variant="secondary" className="w-full" asChild>
-                  <Link href="/sign-up" onClick={() => setMobileOpen(false)}>
-                    Sign Up
+                  <Link href="/pricing" onClick={() => setMobileOpen(false)}>
+                    View Pricing
                   </Link>
                 </Button>
-                <Button className="w-full" asChild>
-                  <Link href="/contact" onClick={() => setMobileOpen(false)}>
-                    Contact Us
+                <Button className="w-full bg-blue-600 hover:bg-blue-700" asChild>
+                  <Link href="/fedsignal/register" onClick={() => setMobileOpen(false)}>
+                    Get Started Free
                   </Link>
                 </Button>
               </div>

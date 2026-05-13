@@ -30,6 +30,13 @@ export const FSCOLLECTIONS = {
   GRANT_REPORTS: "fs_grantReports",
   GRANT_MILESTONES: "fs_grantMilestones",
   GRANT_BUDGETS: "fs_grantBudgets",
+  // Onboarding & Subscription Collections
+  ONBOARDING: "fs_onboarding",
+  ORGANIZATIONS: "fs_organizations",
+  SUBSCRIPTIONS: "fs_subscriptions",
+  USERS: "fs_users",
+  DISCOUNT_CODES: "fs_discountCodes",
+  TEAM_INVITES: "fs_teamInvites",
 } as const;
 
 // ============================================================================
@@ -730,4 +737,195 @@ export interface FSGrantBudgetDoc extends BaseFSDocument {
   // Variance
   variance?: number;
   varianceExplanation?: string;
+}
+
+// ============================================================================
+// Onboarding & Subscription Documents
+// ============================================================================
+
+export type FSSubscriptionTier = "starter" | "professional" | "enterprise";
+export type FSSubscriptionStatus = "active" | "trialing" | "past_due" | "canceled" | "paused";
+export type FSBillingInterval = "monthly" | "annual";
+export type FSOrganizationType = "hbcu" | "minority_owned_business" | "small_business" | "enterprise" | "other";
+export type FSCertificationType = "8a" | "hubzone" | "sdvosb" | "wosb" | "veteran_owned" | "sdb";
+export type FSOnboardingStep = 
+  | "welcome"
+  | "organization_type"
+  | "organization_details"
+  | "certifications"
+  | "capabilities"
+  | "team_invite"
+  | "preferences"
+  | "billing"
+  | "complete";
+export type FSOnboardingStatus = "in_progress" | "completed" | "abandoned";
+
+/** Organization Profile Document */
+export interface FSOrganizationDoc extends BaseFSDocument {
+  name: string;
+  type: FSOrganizationType;
+  subtype?: string;
+  
+  // HBCU specific
+  universityId?: string;
+  isHbcu: boolean;
+  hbcuType?: "public" | "private" | "tribal";
+  enrollment?: number;
+  researchClassification?: "R1" | "R2" | "R3" | "none";
+  
+  // Minority-owned specific
+  isMinorityOwned: boolean;
+  minorityOwnerEthnicity?: string;
+  yearEstablished?: number;
+  annualRevenue?: number;
+  employeeCount?: number;
+  
+  // Certifications
+  certifications: FSCertificationInfo[];
+  
+  // Contact
+  website?: string;
+  phone?: string;
+  address: {
+    street?: string;
+    city?: string;
+    state: string;
+    zip?: string;
+    country: string;
+  };
+  
+  // SAM.gov
+  samUeid?: string;
+  samCageCode?: string;
+  samRegistrationStatus?: "active" | "expired" | "pending";
+  samExpirationDate?: Timestamp;
+  
+  // Capabilities
+  naicsCodes: string[];
+  pscCodes: string[];
+  primaryIndustry?: string;
+  capabilities: string[];
+  pastPerformance: FSPastPerformance[];
+  
+  // Settings
+  timezone: string;
+  notificationPreferences: FSNotificationPreferences;
+}
+
+export interface FSCertificationInfo {
+  type: FSCertificationType;
+  certifyingAgency: string;
+  certificationNumber?: string;
+  issueDate: Timestamp;
+  expirationDate?: Timestamp;
+  status: "active" | "expired" | "pending";
+  documentUrl?: string;
+}
+
+export interface FSPastPerformance {
+  contractNumber: string;
+  agency: string;
+  title: string;
+  amount: number;
+  startDate: Timestamp;
+  endDate?: Timestamp;
+  isHbcuSetAside: boolean;
+  rating?: "exceptional" | "very_good" | "good" | "satisfactory" | "unsatisfactory";
+}
+
+export interface FSNotificationPreferences {
+  email: {
+    dailyDigest: boolean;
+    opportunityAlerts: boolean;
+    deadlineReminders: boolean;
+    grantAlerts: boolean;
+    marketingEmails: boolean;
+  };
+  sms: {
+    urgentDeadlines: boolean;
+    opportunityAlerts: boolean;
+  };
+  inApp: {
+    opportunityRecommendations: boolean;
+    teamingSuggestions: boolean;
+    systemUpdates: boolean;
+  };
+}
+
+/** Subscription Document */
+export interface FSSubscriptionDoc extends BaseFSDocument {
+  userId: string;
+  organizationId: string;
+  tier: FSSubscriptionTier;
+  status: FSSubscriptionStatus;
+  billingInterval: FSBillingInterval;
+  currentPeriodStart: Timestamp;
+  currentPeriodEnd: Timestamp;
+  trialEnd?: Timestamp;
+  cancelAtPeriodEnd: boolean;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  discountCode?: string;
+  discountPercent: number;
+  amountPaid: number;
+  currency: string;
+}
+
+/** Onboarding Progress Document */
+export interface FSOnboardingDoc extends BaseFSDocument {
+  userId: string;
+  organizationId?: string;
+  currentStep: FSOnboardingStep;
+  completedSteps: FSOnboardingStep[];
+  status: FSOnboardingStatus;
+  startedAt: Timestamp;
+  completedAt?: Timestamp;
+  lastActivityAt: Timestamp;
+  stepData: Record<string, any>;
+  marketingAttribution?: {
+    source: string;
+    campaign?: string;
+    referrer?: string;
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+  };
+}
+
+/** Team Invite Document */
+export interface FSTeamInviteDoc extends BaseFSDocument {
+  organizationId: string;
+  invitedBy: string;
+  email: string;
+  role: "admin" | "researcher" | "viewer" | "bd_manager";
+  firstName?: string;
+  lastName?: string;
+  status: "pending" | "accepted" | "expired";
+  acceptedAt?: Timestamp;
+  expiresAt: Timestamp;
+  token: string;
+}
+
+/** Discount Code Document */
+export interface FSDiscountCodeDoc extends BaseFSDocument {
+  code: string;
+  description: string;
+  percentOff: number;
+  amountOff?: number;
+  duration: "once" | "repeating" | "forever";
+  durationInMonths?: number;
+  validFrom: Timestamp;
+  validUntil?: Timestamp;
+  maxRedemptions?: number;
+  redemptionsUsed: number;
+  appliesTo: {
+    tiers: FSSubscriptionTier[];
+    organizationTypes: FSOrganizationType[];
+  };
+  restrictions: {
+    newCustomersOnly?: boolean;
+    minPurchaseAmount?: number;
+    validForAnnualOnly?: boolean;
+  };
+  isActive: boolean;
 }

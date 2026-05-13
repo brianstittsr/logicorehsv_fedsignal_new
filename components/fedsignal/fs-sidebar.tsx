@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { universityList } from "@/lib/fedsignal/utils";
@@ -89,12 +90,12 @@ interface FSSidebarProps {
   onUniversityChange?: (id: string) => void;
 }
 
-export function FSSidebar({ universityId = "tuskegee", onUniversityChange }: FSSidebarProps) {
+export function FSSidebar({ universityId = "huston-tillotson", onUniversityChange }: FSSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [selectedUni, setSelectedUni] = useState(universityId);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-    Reports: true,
+    Reports: false,
     Intelligence: true,
     University: true,
     Partnerships: true,
@@ -127,9 +128,13 @@ export function FSSidebar({ universityId = "tuskegee", onUniversityChange }: FSS
     <nav className="w-[230px] flex-shrink-0 flex flex-col h-screen overflow-y-auto overflow-x-hidden bg-[#0f2a4a] text-white">
       {/* Logo */}
       <div className="p-4 border-b border-white/10 flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-md flex items-center justify-center text-sm font-extrabold text-white bg-[#1a56db]">
-          FS
-        </div>
+        <Image
+          src="/mascots/huston-tillotson.png"
+          alt="Huston-Tillotson University"
+          width={36}
+          height={36}
+          className="w-9 h-9 rounded-md object-contain"
+        />
         <div className="text-lg font-extrabold tracking-tight">
           Fed<span className="text-[#4d94ff]">Signal</span>
         </div>

@@ -22,7 +22,8 @@ import {
   Search,
   Zap,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  Crown
 } from "lucide-react";
 import Link from "next/link";
 
@@ -487,23 +488,174 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to Transform Your Federal Contracting Strategy?</h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join the FedSignal platform and unlock AI-powered insights for HBCU federal contracting and grants success.
+      {/* Freemium CTA Section */}
+      <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <Badge className="mb-4 bg-green-100 text-green-700 border-green-200">
+                Start Free Forever
+              </Badge>
+              <h2 className="text-4xl font-bold mb-4">
+                No Credit Card Required. Start in 60 Seconds.
+              </h2>
+              <p className="text-xl text-muted-foreground mb-6">
+                Join 2,000+ HBCUs and minority-owned businesses already using FedSignal. 
+                Track 5 opportunities free, upgrade only when you need more power.
+              </p>
+              
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3">
+                  <div className="p-1 bg-green-100 rounded-full">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  </div>
+                  <span>Free Starter plan — track 5 opportunities at no cost</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="p-1 bg-green-100 rounded-full">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  </div>
+                  <span>30-day free trial on Professional and Enterprise</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="p-1 bg-green-100 rounded-full">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  </div>
+                  <span>HBCU 50% discount available on all paid plans</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="p-1 bg-green-100 rounded-full">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  </div>
+                  <span>Cancel anytime — no long-term contracts</span>
+                </li>
+              </ul>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700" asChild>
+                  <Link href="/fedsignal/register">
+                    Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/pricing">View Pricing</Link>
+                </Button>
+              </div>
+            </div>
+
+            <Card className="border-2 border-blue-500/20 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl">Simple Pricing</CardTitle>
+                    <CardDescription>Choose what works for you</CardDescription>
+                  </div>
+                  <Badge className="bg-green-100 text-green-700">Save 16% Annually</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y">
+                  <div className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-slate-100 rounded-lg">
+                        <Zap className="h-5 w-5 text-slate-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">Starter</p>
+                        <p className="text-sm text-muted-foreground">5 opportunities</p>
+                      </div>
+                    </div>
+                    <span className="text-2xl font-bold">Free</span>
+                  </div>
+                  <div className="p-4 flex items-center justify-between bg-blue-50/30">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Crown className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">Professional</p>
+                        <p className="text-sm text-muted-foreground">Unlimited + AI</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold">$99</span>
+                      <span className="text-sm text-muted-foreground">/mo</span>
+                    </div>
+                  </div>
+                  <div className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <Building2 className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">Enterprise</p>
+                        <p className="text-sm text-muted-foreground">Advanced intelligence</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold">$199</span>
+                      <span className="text-sm text-muted-foreground">/mo</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-50 border-t">
+                  <Button className="w-full" variant="outline" asChild>
+                    <Link href="/pricing">See Full Comparison</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof Section */}
+      <section className="py-16 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-4xl font-bold text-blue-400 mb-2">2,000+</div>
+              <p className="text-slate-400">Active Users</p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-green-400 mb-2">100+</div>
+              <p className="text-slate-400">HBCU Partners</p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-purple-400 mb-2">$500M+</div>
+              <p className="text-slate-400">Opportunities Tracked</p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-amber-400 mb-2">15%</div>
+              <p className="text-slate-400">Free-to-Paid Conversion</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Win Your Next Federal Contract?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8">
+            Join thousands of HBCUs and minority-owned businesses already using FedSignal. 
+            Start free, upgrade when you're ready.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50" asChild>
-              <Link href="/fedsignal">
-                Launch FedSignal <ArrowRight className="ml-2 h-5 w-5" />
+              <Link href="/fedsignal/register">
+                Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10" asChild>
-              <Link href="/contact">Contact Us</Link>
+              <Link href="/contact">Talk to Sales</Link>
             </Button>
           </div>
+          <p className="mt-6 text-sm text-blue-200">
+            No credit card required • 30-day free trial • Cancel anytime
+          </p>
         </div>
       </section>
     </>

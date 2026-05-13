@@ -8,9 +8,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, FileText, Calendar, DollarSign, Filter, Plus, AlertCircle, CheckCircle2, Clock, TrendingUp, Users, Paperclip, Grid, List, Image as ImageIcon, HelpCircle } from "lucide-react";
-import { mockGrantDetails, GrantDetail } from "@/lib/fedsignal/mock-grant-data";
 import Image from "next/image";
 import { Walkthrough, WalkthroughButton } from "@/components/ui/walkthrough";
+
+interface GrantDetail {
+  id: string;
+  grantNumber: string;
+  title: string;
+  agency: string;
+  status: string;
+  universityId: string;
+  startDate: any;
+  endDate: any;
+  totalAwardAmount: number;
+  principalInvestigator: {
+    name: string;
+    email: string;
+    title: string;
+  };
+  projectSummary: string;
+  nextReportDueDate?: any;
+  attachments?: Array<{ name: string; url: string; type: string }>;
+  milestones?: Array<{ title: string; dueDate: any; status: string; progressPercentage?: number }>;
+}
 
 export default function GrantsPage() {
   const [search, setSearch] = useState("");
@@ -75,11 +95,23 @@ export default function GrantsPage() {
   ];
 
   useEffect(() => {
-    // Load mock data directly
-    setLoading(true);
-    setGrants(mockGrantDetails);
-    setLoading(false);
+    fetchGrants();
   }, []);
+
+  const fetchGrants = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/fedsignal/grants");
+      const result = await response.json();
+      if (result.success) {
+        setGrants(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch grants:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -327,25 +359,17 @@ export default function GrantsPage() {
                   <Badge variant="secondary">{grant.agency}</Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <Users className="h-3 w-3" />
-                  <span className="text-muted-foreground">PI: {grant.principalInvestigator.name}</span>
-                </div>
-                {grant.startDate && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>{grant.startDate} - {grant.endDate}</span>
+              <CardContent className="pt-2">
+                {grant.nextReportDueDate && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Next report: {grant.nextReportDueDate}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-sm font-semibold text-green-600">
-                  <DollarSign className="h-3 w-3" />
-                  <span>${grant.totalAwardAmount.toLocaleString()}</span>
-                </div>
-                {grant.nextReportDueDate && (
-                  <div className="flex items-center gap-2 text-xs text-amber-600">
-                    <AlertCircle className="h-3 w-3" />
-                    <span>Next report: {grant.nextReportDueDate}</span>
+                {grant.attachments && grant.attachments.length > 0 && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Paperclip className="h-4 w-4" />
+                    <span>{grant.attachments?.length || 0} attachments</span>
                   </div>
                 )}
                 <Button variant="outline" size="sm" className="w-full" asChild>
@@ -375,7 +399,7 @@ export default function GrantsPage() {
                         {grant.status.replace("_", " ").toUpperCase()}
                       </Badge>
                       <Badge variant="secondary">{grant.agency}</Badge>
-                      {grant.attachments.length > 0 && (
+                      {grant.attachments && grant.attachments.length > 0 && (
                         <Badge variant="outline" className="flex items-center gap-1">
                           <Paperclip className="h-3 w-3" />
                           {grant.attachments.length}
@@ -406,11 +430,12 @@ export default function GrantsPage() {
                           Next report: {grant.nextReportDueDate}
                         </span>
                       )}
-                      {grant.milestones.length > 0 && (
-                        <span className="text-muted-foreground">
-                          {grant.milestones.filter((m: any) => m.status === "completed").length}/{grant.milestones.length} milestones
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-muted-foreground">Progress:</span>
+                        <span className="font-semibold">
+                          {grant.milestones ? `${grant.milestones.filter((m: any) => m.status === "completed").length}/${grant.milestones.length}` : "0/0"}
                         </span>
-                      )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2">

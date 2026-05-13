@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,87 +30,57 @@ interface Opportunity {
   id: string;
   title: string;
   agency: string;
-  matchScore: number;
-  deadline: string;
-  value: string;
-  type: string;
+  solicitationNumber: string;
+  type: "grant" | "contract" | "cooperative_agreement" | "other";
+  status: "open" | "closed" | "awarded" | "cancelled";
+  postedDate: any;
+  deadline: any;
+  amount: string;
+  isHbcuSetAside: boolean;
+  hbcuPreferred: boolean;
   tags: string[];
-  samUrl?: string;
-  postedDate: string;
+  domains: string[];
+  description: string;
+  matchScore?: number;
+  uiLink?: string;
 }
-
-const mockOpportunities: Opportunity[] = [
-  {
-    id: "1",
-    title: "Artificial Intelligence Research Initiative",
-    agency: "Department of Defense",
-    matchScore: 94,
-    deadline: "2024-03-15",
-    value: "$2,500,000",
-    type: "SBIR Phase II",
-    tags: ["AI/ML", "Defense", "High Priority"],
-    postedDate: "2024-02-01",
-  },
-  {
-    id: "2",
-    title: "Health Disparities Research Program",
-    agency: "National Institutes of Health",
-    matchScore: 89,
-    deadline: "2024-03-22",
-    value: "$1,800,000",
-    type: "R01 Research Grant",
-    tags: ["Health", "HBCU Eligible", "Research"],
-    postedDate: "2024-02-05",
-  },
-  {
-    id: "3",
-    title: "HBCU STEM Excellence Program",
-    agency: "National Science Foundation",
-    matchScore: 87,
-    deadline: "2024-04-01",
-    value: "$3,200,000",
-    type: "Institutional Grant",
-    tags: ["STEM", "HBCU", "Education"],
-    postedDate: "2024-01-28",
-  },
-  {
-    id: "4",
-    title: "Cybersecurity Infrastructure Enhancement",
-    agency: "Department of Homeland Security",
-    matchScore: 82,
-    deadline: "2024-03-30",
-    value: "$950,000",
-    type: "SBIR Phase I",
-    tags: ["Cybersecurity", "Infrastructure"],
-    postedDate: "2024-02-10",
-  },
-  {
-    id: "5",
-    title: "Renewable Energy Research Partnership",
-    agency: "Department of Energy",
-    matchScore: 78,
-    deadline: "2024-04-15",
-    value: "$1,200,000",
-    type: "Research Grant",
-    tags: ["Energy", "Sustainability", "Research"],
-    postedDate: "2024-02-08",
-  },
-];
 
 export default function OpportunitiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [agencyFilter, setAgencyFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [savedOpportunities, setSavedOpportunities] = useState<string[]>(["1"]);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [savedOpportunities, setSavedOpportunities] = useState<string[]>([]);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredOpportunities = mockOpportunities.filter((opp) => {
+  useEffect(() => {
+    fetchOpportunities();
+  }, []);
+
+  const fetchOpportunities = async () => {
+    try {
+      const response = await fetch("/api/fedsignal/opportunities");
+      const result = await response.json();
+      if (result.success) {
+        setOpportunities(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch opportunities:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredOpportunities = opportunities.filter((opp) => {
     const matchesSearch =
       opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       opp.agency.toLowerCase().includes(searchQuery.toLowerCase()) ||
       opp.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesAgency = agencyFilter === "all" || opp.agency === agencyFilter;
     const matchesType = typeFilter === "all" || opp.type === typeFilter;
-    return matchesSearch && matchesAgency && matchesType;
+    const matchesStatus = statusFilter === "all" || opp.status === statusFilter;
+    return matchesSearch && matchesAgency && matchesType && matchesStatus;
   });
 
   const toggleSave = (id: string) => {
@@ -119,7 +89,8 @@ export default function OpportunitiesPage() {
     );
   };
 
-  const getMatchBadgeColor = (score: number) => {
+  const getMatchBadgeColor = (score?: number) => {
+    if (!score) return "bg-gray-600 hover:bg-gray-700";
     if (score >= 90) return "bg-green-600 hover:bg-green-700";
     if (score >= 80) return "bg-blue-600 hover:bg-blue-700";
     if (score >= 70) return "bg-amber-600 hover:bg-amber-700";
@@ -142,7 +113,7 @@ export default function OpportunitiesPage() {
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{filteredOpportunities.length} opportunities</Badge>
           <Badge variant="outline" className="text-green-600">
-            {filteredOpportunities.filter((o) => o.matchScore >= 90).length} high match
+            {filteredOpportunities.filter((o) => o.matchScore && o.matchScore >= 90).length} high match
           </Badge>
         </div>
       </div>
@@ -194,102 +165,120 @@ export default function OpportunitiesPage() {
       </Card>
 
       {/* Opportunities List */}
-      <div className="space-y-4">
-        {filteredOpportunities.map((opp) => (
-          <Card key={opp.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex-1 space-y-3">
-                  {/* Title & Agency */}
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-sm font-medium text-muted-foreground">{opp.agency}</p>
-                        <span className="text-muted-foreground">•</span>
-                        <p className="text-sm text-muted-foreground">{opp.type}</p>
+      {loading ? (
+        <Card className="p-12 text-center">
+          <div className="text-muted-foreground">Loading opportunities...</div>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {filteredOpportunities.map((opp) => (
+            <Card key={opp.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex-1 space-y-3">
+                    {/* Title & Agency */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm font-medium text-muted-foreground">{opp.agency}</p>
+                          <span className="text-muted-foreground">•</span>
+                          <p className="text-sm text-muted-foreground">{opp.type}</p>
+                        </div>
+                        <h3 className="text-lg font-semibold">{opp.title}</h3>
                       </div>
-                      <h3 className="text-lg font-semibold">{opp.title}</h3>
+                      {opp.matchScore && (
+                        <Badge className={getMatchBadgeColor(opp.matchScore)}>
+                          {opp.matchScore}% Match
+                        </Badge>
+                      )}
                     </div>
-                    <Badge className={getMatchBadgeColor(opp.matchScore)}>
-                      {opp.matchScore}% Match
-                    </Badge>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {opp.isHbcuSetAside && (
+                        <Badge variant="secondary" className="text-xs">
+                          HBCU Set-Aside
+                        </Badge>
+                      )}
+                      {opp.hbcuPreferred && (
+                        <Badge variant="secondary" className="text-xs">
+                          HBCU Preferred
+                        </Badge>
+                      )}
+                      {opp.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          <Tag className="mr-1 h-3 w-3" />
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    {/* Details */}
+                    <div className="flex flex-wrap items-center gap-4 text-sm">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>Deadline: {opp.deadline ? new Date(opp.deadline.seconds * 1000).toLocaleDateString() : "TBD"}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <DollarSign className="h-4 w-4" />
+                        <span className="font-medium text-green-600">{opp.amount || "TBD"}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <span>Posted: {opp.postedDate ? new Date(opp.postedDate.seconds * 1000).toLocaleDateString() : "TBD"}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Tags */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {opp.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        <Tag className="mr-1 h-3 w-3" />
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* Details */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>Deadline: {opp.deadline}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <DollarSign className="h-4 w-4" />
-                      <span className="font-medium text-green-600">{opp.value}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <span>Posted: {opp.postedDate}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 lg:flex-col lg:items-end">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => toggleSave(opp.id)}
-                      className={savedOpportunities.includes(opp.id) ? "text-primary" : ""}
-                    >
-                      <Bookmark
-                        className="h-4 w-4"
-                        fill={savedOpportunities.includes(opp.id) ? "currentColor" : "none"}
-                      />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/portal/admin/fedsignal/opportunities/${opp.id}`}>
-                        Details
-                      </Link>
-                    </Button>
-                    {opp.samUrl && (
-                      <Button size="sm" variant="outline" asChild>
-                        <a href={opp.samUrl} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="mr-1 h-3 w-3" />
-                          SAM.gov
-                        </a>
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 lg:flex-col lg:items-end">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleSave(opp.id)}
+                        className={savedOpportunities.includes(opp.id) ? "text-primary" : ""}
+                      >
+                        <Bookmark
+                          className="h-4 w-4"
+                          fill={savedOpportunities.includes(opp.id) ? "currentColor" : "none"}
+                        />
                       </Button>
-                    )}
+                      <Button variant="ghost" size="icon">
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/fedsignal/opportunities/${opp.id}`}>
+                          Details
+                        </Link>
+                      </Button>
+                      {opp.uiLink && (
+                        <Button size="sm" variant="outline" asChild>
+                          <a href={opp.uiLink} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="mr-1 h-3 w-3" />
+                            SAM.gov
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
 
-        {filteredOpportunities.length === 0 && (
-          <Card className="p-12 text-center">
-            <Target className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-semibold">No opportunities found</h3>
-            <p className="text-muted-foreground">
-              Try adjusting your search or filters
-            </p>
-          </Card>
-        )}
-      </div>
+          {filteredOpportunities.length === 0 && (
+            <Card className="p-12 text-center">
+              <Target className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-semibold">No opportunities found</h3>
+              <p className="text-muted-foreground">
+                Try adjusting your search or filters
+              </p>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
 }
