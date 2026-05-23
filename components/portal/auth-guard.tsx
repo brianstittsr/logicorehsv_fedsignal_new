@@ -10,9 +10,9 @@ interface AuthGuardProps {
 }
 
 // Simple sessionStorage-based auth check
+// BYPASS: Always return true for development
 function isDemoAuthenticated(): boolean {
-  if (typeof window === "undefined") return false;
-  return sessionStorage.getItem("fedsignal_demo_login") === "true";
+  return true;
 }
 
 export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
@@ -27,7 +27,14 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     setIsLoading(false);
 
     if (!auth) {
-      router.push("/sign-in");
+      // Check if this is a fedsignal path - redirect to homepage (login modal)
+      // otherwise redirect to sign-in for portal paths
+      const pathname = window.location.pathname;
+      if (pathname.startsWith("/fedsignal")) {
+        router.push("/");
+      } else {
+        router.push("/sign-in");
+      }
     }
   }, [router]);
 

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ArrowRight, CheckCircle, Play, ChevronLeft, ChevronRight, AlertCircle, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { SCHOOL_CREDENTIALS } from "@/lib/fedsignal/school-auth";
 
 export interface HeroSlide {
   id: string;
@@ -141,6 +142,7 @@ export function HeroCarousel({ slides = defaultSlides, autoPlayInterval = 6000 }
   // Login modal state
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [selectedUniversity, setSelectedUniversity] = useState<typeof UNIVERSITIES[0] | null>(null);
+  const [featuredUniversity, setFeaturedUniversity] = useState(UNIVERSITIES.find(u => u.id === "huston-tillotson")!);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -148,41 +150,44 @@ export function HeroCarousel({ slides = defaultSlides, autoPlayInterval = 6000 }
   const [showAnimation, setShowAnimation] = useState(false);
 
   const handleUniversityClick = (university: typeof UNIVERSITIES[0]) => {
+    // Immediately update the big featured card
+    setFeaturedUniversity(university);
     setSelectedUniversity(university);
-    setShowAnimation(true);
-    // Show random animation before opening login modal
-    setTimeout(() => {
-      setShowAnimation(false);
-      setIsLoginModalOpen(true);
-      setUsername("");
-      setPassword("");
-      setLoginError("");
-    }, 1500);
+    // Open login modal right away
+    setUsername("");
+    setPassword("");
+    setLoginError("");
+    setIsLoginModalOpen(true);
   };
 
   const handleLogin = useCallback(() => {
-    if (!username || !password) return;
-    
+    if (!username || !password || !selectedUniversity) return;
+
     setIsLoggingIn(true);
     setLoginError("");
-    
-    // Validate credentials
-    if (username === "HBCU1" && password === "HBCU2026") {
-      // Store login state
+
+    // Validate credentials against pre-configured school credentials
+    const schoolCreds = SCHOOL_CREDENTIALS[selectedUniversity.id];
+    if (!schoolCreds || username !== schoolCreds.username || password !== schoolCreds.password) {
+      setLoginError("Invalid username or password");
+      setIsLoggingIn(false);
+      return;
+    }
+
+    // Set session immediately — no async Firestore call needed for login
+    try {
       sessionStorage.setItem("fedsignal_demo_login", "true");
       sessionStorage.setItem("fedsignal_username", username);
-      sessionStorage.setItem("svp_user_id", selectedUniversity?.id || "");
-      sessionStorage.setItem("svp_user_role", "hbcu");
-      sessionStorage.setItem("svp_user_university", selectedUniversity?.name || "");
-      sessionStorage.setItem("svp_user_mascot", selectedUniversity?.mascot || "");
-      
-      // Close modal and redirect to profile page
-      setIsLoginModalOpen(false);
-      router.push(`/fedsignal/profile/${selectedUniversity?.id || "huston-tillotson"}`);
-    } else {
-      setLoginError("Invalid username or password. Try HBCU1 / HBCU2026");
-      setIsLoggingIn(false);
+      sessionStorage.setItem("svp_user_id", selectedUniversity.id);
+      sessionStorage.setItem("svp_user_role", "vp_research");
+      sessionStorage.setItem("svp_user_university", selectedUniversity.name);
+      sessionStorage.setItem("svp_user_mascot", selectedUniversity.icon || "🎓");
+    } catch {
+      // sessionStorage may be blocked
     }
+
+    setIsLoginModalOpen(false);
+    router.push(`/fedsignal/profile/${selectedUniversity.id}`);
   }, [username, password, router, selectedUniversity]);
 
   const goToNext = useCallback(() => {
@@ -277,58 +282,75 @@ export function HeroCarousel({ slides = defaultSlides, autoPlayInterval = 6000 }
             <div className="mt-10">
               <p className="text-sm text-gray-400 mb-4">Select your institution to access FedSignal</p>
               
-              {/* Huston-Tillotson - Featured */}
+              {/* Featured University */}
               <div className="flex justify-center mb-16">
                 <button
-                  key="huston-tillotson"
-                  onClick={() => handleUniversityClick(UNIVERSITIES.find(u => u.id === "huston-tillotson")!)}
-                  className="group relative bg-white hover:bg-gray-50 border-2 border-white rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl"
-                  style={{ transform: 'scale(1.5)' }}
+                  key={featuredUniversity.id}
+                  onClick={() => handleUniversityClick(featuredUniversity)}
+                  className="group relative bg-white hover:bg-gray-50 border-2 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl"
+                  style={{ transform: 'scale(1.5)', borderColor: featuredUniversity.color }}
                 >
+                  <div className="absolute -top-3 -right-3 bg-[#1a56db] text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                    SELECTED
+                  </div>
                   <div className="w-24 h-24 mx-auto mb-3 flex items-center justify-center">
                     <img
-                      src={`${UNIVERSITIES.find(u => u.id === "huston-tillotson")?.mascotImage}?v=${CACHE_BUSTER}`}
-                      alt="Rams"
+                      src={`${featuredUniversity.mascotImage}?v=${CACHE_BUSTER}`}
+                      alt={featuredUniversity.mascot}
                       className="w-full h-full object-contain"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden');
                       }}
                     />
-                    <div className="text-4xl hidden">🐾</div>
+                    <div className="text-4xl hidden">{featuredUniversity.icon}</div>
                   </div>
-                  <div className="text-lg font-bold text-gray-900 text-center leading-tight">Huston-Tillotson University</div>
-                  <div className="text-sm text-gray-600 text-center mt-1">Rams</div>
-                  <div className="text-sm font-semibold text-[#1a56db] text-center mt-2">Click to Login</div>
+                  <div className="text-lg font-bold text-gray-900 text-center leading-tight">{featuredUniversity.name}</div>
+                  <div className="text-sm text-gray-600 text-center mt-1">{featuredUniversity.mascot}</div>
+                  <div className="text-sm font-semibold text-center mt-2" style={{ color: featuredUniversity.color }}>Click to Login →</div>
                   <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Shield className="h-4 w-4 text-[#4d94ff]" />
                   </div>
                 </button>
               </div>
 
-              {/* Other Universities - Grayed out */}
-              <div className="grid grid-cols-3 md:grid-cols-5 gap-4 max-w-4xl mx-auto opacity-50 pointer-events-none mt-8">
-                {UNIVERSITIES.filter(u => u.id !== "huston-tillotson").map((university) => (
-                  <button
-                    key={university.id}
-                    className="group relative bg-white/5 border border-white/10 rounded-lg p-4"
-                  >
-                    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-                      <img
-                        src={`${university.mascotImage}?v=${CACHE_BUSTER}`}
-                        alt={university.mascot}
-                        className="w-full h-full object-contain grayscale"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                      <div className="text-3xl hidden grayscale">{university.icon}</div>
-                    </div>
-                    <div className="text-xs font-semibold text-white text-center leading-tight">{university.name}</div>
-                    <div className="text-xs text-gray-400 text-center mt-1">{university.mascot}</div>
-                  </button>
-                ))}
+              {/* All Universities Grid - All clickable, highlight selected */}
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-4 max-w-4xl mx-auto mt-8">
+                {UNIVERSITIES.map((university) => {
+                  const isSelected = university.id === featuredUniversity.id;
+                  return (
+                    <button
+                      key={university.id}
+                      onClick={() => handleUniversityClick(university)}
+                      className={`group relative rounded-lg p-4 transition-all hover:scale-105 ${
+                        isSelected
+                          ? "bg-white border-2 shadow-lg scale-105"
+                          : "bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/40"
+                      }`}
+                      style={isSelected ? { borderColor: university.color } : {}}
+                    >
+                      {isSelected && (
+                        <div className="absolute -top-2 -right-2 w-5 h-5 bg-[#1a56db] rounded-full flex items-center justify-center">
+                          <Shield className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+                        <img
+                          src={`${university.mascotImage}?v=${CACHE_BUSTER}`}
+                          alt={university.mascot}
+                          className={`w-full h-full object-contain transition-all ${isSelected ? "" : "grayscale hover:grayscale-0"}`}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden');
+                          }}
+                        />
+                        <div className="text-3xl hidden">{university.icon}</div>
+                      </div>
+                      <div className={`text-xs font-semibold text-center leading-tight ${ isSelected ? "text-gray-900" : "text-white"}`}>{university.name}</div>
+                      <div className={`text-xs text-center mt-1 ${isSelected ? "text-gray-600" : "text-gray-400"}`}>{university.mascot}</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -355,25 +377,35 @@ export function HeroCarousel({ slides = defaultSlides, autoPlayInterval = 6000 }
 
           {/* Login Modal */}
           <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-center text-2xl">FedSignal Login</DialogTitle>
+            <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+              {/* University banner */}
+              {selectedUniversity && (
+                <div
+                  className="w-full py-6 px-8 flex flex-col items-center gap-3"
+                  style={{ backgroundColor: selectedUniversity.color }}
+                >
+                  <div className="w-20 h-20 bg-white rounded-full p-2 flex items-center justify-center shadow-lg">
+                    <img
+                      src={`${selectedUniversity.mascotImage}?v=${CACHE_BUSTER}`}
+                      alt={selectedUniversity.mascot}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden');
+                      }}
+                    />
+                    <span className="text-4xl hidden">{selectedUniversity.icon}</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-white font-bold text-lg leading-tight">{selectedUniversity.name}</div>
+                    <div className="text-white/80 text-sm">{selectedUniversity.mascot}</div>
+                  </div>
+                </div>
+              )}
+              <div className="p-6">
+              <DialogHeader className="mb-4">
+                <DialogTitle className="text-center text-xl">FedSignal Login</DialogTitle>
                 <DialogDescription className="text-center">
-                  {selectedUniversity && (
-                    <div className="flex items-center justify-center gap-2 mt-2">
-                      <img
-                        src={`${selectedUniversity.mascotImage}?v=${CACHE_BUSTER}`}
-                        alt={selectedUniversity.mascot}
-                        className="w-8 h-8 object-contain"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                      <span className="text-2xl hidden">{selectedUniversity.icon}</span>
-                      <span className="text-sm font-semibold">{selectedUniversity.name}</span>
-                    </div>
-                  )}
                   Enter your credentials to access the FedSignal portal
                 </DialogDescription>
               </DialogHeader>
@@ -414,8 +446,11 @@ export function HeroCarousel({ slides = defaultSlides, autoPlayInterval = 6000 }
                   {isLoggingIn ? "Logging in..." : "Login"}
                 </Button>
                 <p className="text-xs text-center text-muted-foreground pt-2">
-                  Demo credentials: HBCU1 / HBCU2026
+                  Demo credentials: {selectedUniversity && SCHOOL_CREDENTIALS[selectedUniversity.id] 
+                    ? `${SCHOOL_CREDENTIALS[selectedUniversity.id].username} / ${SCHOOL_CREDENTIALS[selectedUniversity.id].password}`
+                    : "HBCU1 / HBCU2026"}
                 </p>
+              </div>
               </div>
             </DialogContent>
           </Dialog>

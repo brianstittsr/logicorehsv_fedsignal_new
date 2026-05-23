@@ -44,7 +44,8 @@ import {
   Bookmark,
   BookmarkCheck,
   Clock,
-  Users
+  Users,
+  Settings
 } from "lucide-react";
 import {
   Dialog,
@@ -59,6 +60,7 @@ import { toast } from "sonner";
 import { useUserProfile } from "@/contexts/user-profile-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CompanySearchTab } from "@/components/sam/CompanySearchTab";
+import { loadSamSearchSettings, applySamSearchSettings } from "@/lib/fedsignal/sam-search-settings";
 
 interface SamOpportunity {
   noticeId: string;
@@ -148,6 +150,19 @@ export default function SamGovSearchPage() {
   const [saveAssignee, setSaveAssignee] = useState("");
   const [saving, setSaving] = useState(false);
   const [teamMembers, setTeamMembers] = useState<Array<{ id: string; name: string; email: string }>>([]);
+  // SAM Search Settings
+  const [samSettings, setSamSettings] = useState<any>(null);
+  const [useScopedSearch, setUseScopedSearch] = useState(true);
+
+  // Load SAM search settings
+  useEffect(() => {
+    loadSamSearchSettings().then((settings) => {
+      if (settings) {
+        setSamSettings(settings);
+        setUseScopedSearch(settings.enabled);
+      }
+    });
+  }, []);
 
   // Load team members for assignment
   useEffect(() => {
@@ -249,15 +264,27 @@ export default function SamGovSearchPage() {
     setCurrentPage(1);
 
     try {
+      // Apply scoped search settings if enabled
+      let searchQuery = query;
+      let searchFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value) acc[key] = value;
+        return acc;
+      }, {} as SearchFilters);
+
+      if (useScopedSearch && samSettings && samSettings.enabled) {
+        const scoped = applySamSearchSettings(samSettings, query, searchFilters);
+        searchQuery = scoped.query;
+        searchFilters = scoped.filters as SearchFilters;
+        
+        toast.info(`Using scoped search with ${samSettings.searchKeywords.length} keywords, ${samSettings.noticeTypes.length} notice types, ${samSettings.naicsCodes.length} NAICS codes`);
+      }
+
       const response = await fetch("/api/sam/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          query,
-          filters: Object.entries(filters).reduce((acc, [key, value]) => {
-            if (value) acc[key] = value;
-            return acc;
-          }, {} as SearchFilters)
+          query: searchQuery,
+          filters: searchFilters
         })
       });
 
@@ -379,6 +406,33 @@ export default function SamGovSearchPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Scoped Search Toggle */}
+          {samSettings && (
+            <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <input
+                type="checkbox"
+                id="useScopedSearch"
+                checked={useScopedSearch}
+                onChange={(e) => setUseScopedSearch(e.target.checked)}
+                className="rounded border-input"
+              />
+              <div className="flex-1">
+                <Label htmlFor="useScopedSearch" className="font-medium text-sm">
+                  Use University-Scoped Search
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Apply configured filters: {samSettings.searchKeywords.length} keywords, {samSettings.noticeTypes.length} notice types, {samSettings.naicsCodes.length} NAICS codes
+                </p>
+              </div>
+              <Button variant="ghost" size="sm" asChild>
+                <a href="/portal/admin/fedsignal/settings/sam-search" target="_blank" rel="noopener noreferrer">
+                  <Settings className="h-4 w-4 mr-1" />
+                  Configure
+                </a>
+              </Button>
+            </div>
+          )}
+
           <div className="flex gap-2">
             <Input
               placeholder="e.g., Find IT services contracts in California..."

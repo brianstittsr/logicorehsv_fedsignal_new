@@ -58,11 +58,13 @@ export const universityThemes: Record<string, { primary: string; secondary: stri
 
 /** University list for selectors */
 export const universityList = [
-  { value: "tuskegee", label: "Tuskegee University", mascot: "🦅", mascotImage: "/mascots/Tuskeegee-mascot.jpg" },
-  { value: "howard", label: "Howard University", mascot: "🦉", mascotImage: "/mascots/howard.png" },
-  { value: "famu", label: "Florida A&M University", mascot: "🐅", mascotImage: "/mascots/famu.png" },
-  { value: "aamu", label: "Alabama A&M University", mascot: "🐴", mascotImage: "/mascots/aamu.png" },
-  { value: "ncat", label: "NC A&T State University", mascot: "🐐", mascotImage: "/mascots/ncat.png" },
-  { value: "morehouse", label: "Morehouse College", mascot: "🦁", mascotImage: "/mascots/morehouse.png" },
-  { value: "huston-tillotson", label: "Huston-Tillotson University", mascot: "🐾", mascotImage: "/mascots/huston-tillotson.png" },
+  { value: "tuskegee", label: "Tuskegee University", mascot: "🦅", mascotImage: "/mascots/Tuskeegee-mascot.jpg", state: "AL" },
+  { value: "howard", label: "Howard University", mascot: "🦉", mascotImage: "/mascots/howard.png", state: "DC" },
+  { value: "spelman", label: "Spelman College", mascot: "🐆", mascotImage: "/mascots/spelman.png", state: "GA" },
+  { value: "morehouse", label: "Morehouse College", mascot: "🦁", mascotImage: "/mascots/morehouse.png", state: "GA" },
+  { value: "hampton", label: "Hampton University", mascot: "🏴‍☠️", mascotImage: "/mascots/hampton.png", state: "VA" },
+  { value: "famu", label: "Florida A&M University", mascot: "�", mascotImage: "/mascots/famu.png", state: "FL" },
+  { value: "aamu", label: "Alabama A&M University", mascot: "�", mascotImage: "/mascots/aamu.png", state: "AL" },
+  { value: "ncat", label: "NC A&T State University", mascot: "🐐", mascotImage: "/mascots/ncat.png", state: "NC" },
+  { value: "huston-tillotson", label: "Huston-Tillotson University", mascot: "🐾", mascotImage: "/mascots/huston-tillotson.png", state: "TX" },
 ];

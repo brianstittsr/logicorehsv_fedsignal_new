@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Search, Settings, Brain } from "lucide-react";
 
 export default function FSSettingsAdminPage() {
   const [settings, setSettings] = useState({
@@ -22,6 +22,9 @@ export default function FSSettingsAdminPage() {
     enableContentStudio: true,
     enableConsortiumWorkspace: true,
     enableSbriMatch: false,
+    // LLM Settings
+    llmProvider: "openai",
+    enableSamAgent: true,
   });
 
   return (
@@ -40,6 +43,25 @@ export default function FSSettingsAdminPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* SAM.gov Search Settings */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              SAM.gov Search Configuration
+            </CardTitle>
+            <CardDescription>Configure search scope and filters for university SAM.gov searches</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline">
+              <Link href="/portal/admin/fedsignal/settings/sam-search">
+                <Settings className="h-4 w-4 mr-2" />
+                Configure SAM.gov Search Settings
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* General Settings */}
         <Card>
           <CardHeader>
@@ -143,6 +165,76 @@ export default function FSSettingsAdminPage() {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* LLM Settings */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              LLM Configuration
+            </CardTitle>
+            <CardDescription>Configure AI provider for SAM.gov natural language search</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <input
+                type="checkbox"
+                id="enableSamAgent"
+                checked={settings.enableSamAgent}
+                onChange={(e) => setSettings({ ...settings, enableSamAgent: e.target.checked })}
+                className="rounded border-input"
+              />
+              <Label htmlFor="enableSamAgent" className="text-base font-medium">
+                Enable AI-Powered SAM.gov Search
+              </Label>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              When enabled, users can use natural language queries like "Find software development opportunities for HBCUs in California"
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+              <div className="space-y-2">
+                <Label htmlFor="llmProvider">LLM Provider</Label>
+                <select
+                  id="llmProvider"
+                  value={settings.llmProvider}
+                  onChange={(e) => setSettings({ ...settings, llmProvider: e.target.value })}
+                  className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
+                >
+                  <option value="openai">OpenAI (GPT-4)</option>
+                  <option value="anthropic">Anthropic (Claude)</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>API Keys (Environment Variables)</Label>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div><code>OPENAI_API_KEY</code> for OpenAI</div>
+                  <div><code>ANTHROPIC_API_KEY</code> for Anthropic</div>
+                  <div><code>SAM_API_KEY</code> for SAM.gov API</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Hermes Agent Configuration */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-purple-600" />
+              Hermes Agent Configuration
+            </CardTitle>
+            <CardDescription>Configure Hermes AI Agent for advanced SAM.gov automation and intelligent assistance</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline">
+              <Link href="/portal/admin/fedsignal/hermes">
+                <Brain className="h-4 w-4 mr-2" />
+                Configure Hermes Agent
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

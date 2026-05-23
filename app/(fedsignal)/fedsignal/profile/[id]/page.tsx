@@ -108,37 +108,50 @@ export default function UniversityProfilePage() {
   };
   
   const university = universityList.find(u => u.value === universityId) || universityList[0];
-  
-  // Force Huston-Tillotson University
-  const forcedUniversity = {
-    label: "Huston-Tillotson University",
-    value: "huston-tillotson",
-    mascot: "🐾",
-    mascotImage: "/mascots/huston-tillotson.png"
-  };
-  
+
   const [profile, setProfile] = useState({
-    name: forcedUniversity.label,
-    acronym: forcedUniversity.label.split(" ").map(n => n[0]).join(""),
-    state: "TX",
+    name: university.label,
+    acronym: university.label.split(" ").map((n: string) => n[0]).join(""),
+    state: (university as any).state || "TX",
     type: "HBCU",
     researchClassification: "R2",
     enrollment: "1000",
-    website: `https://www.htu.edu`,
-    mascot: forcedUniversity.mascot,
-    profilePhoto: "/mascots/huston-tillotson.png",
+    website: `https://www.${university.value.replace(/-/g, "")}.edu`,
+    mascot: university.mascot,
+    profilePhoto: university.mascotImage,
     colors: {
       primary: "#003366",
       secondary: "#FF6600",
     },
     govConScore: 76,
-    description: "Leading HBCU institution in Austin, Texas with strong research capabilities in STEM fields.",
+    description: `Leading HBCU institution with strong research capabilities in STEM fields and federal contracting opportunities.`,
     primaryDomains: ["Cybersecurity", "Materials Science"],
     contactName: "Dr. James Wilson",
-    contactEmail: "research@htu.edu",
+    contactEmail: `research@${university.value.replace(/-/g, "")}.edu`,
     contactPhone: "(512) 478-2000",
     contactTitle: "VP of Research",
   });
+
+  // Load session data on client only
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sessionName = sessionStorage.getItem("svp_user_university");
+    const sessionId = sessionStorage.getItem("svp_user_id");
+    const sessionMascot = sessionStorage.getItem("svp_user_mascot");
+    if (sessionName && sessionId) {
+      const matchedUniversity = universityList.find(u => u.value === sessionId);
+      setProfile(prev => ({
+        ...prev,
+        name: sessionName,
+        acronym: sessionName.split(" ").map((n: string) => n[0]).join(""),
+        state: (matchedUniversity as any)?.state || prev.state,
+        website: `https://www.${sessionId.replace(/-/g, "")}.edu`,
+        mascot: sessionMascot || prev.mascot,
+        profilePhoto: matchedUniversity?.mascotImage || `/mascots/${sessionId}.png`,
+        contactEmail: `research@${sessionId.replace(/-/g, "")}.edu`,
+      }));
+    }
+  }, []);
 
   const [users, setUsers] = useState<UniversityUser[]>([
     { 

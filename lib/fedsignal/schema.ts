@@ -37,6 +37,12 @@ export const FSCOLLECTIONS = {
   USERS: "fs_users",
   DISCOUNT_CODES: "fs_discountCodes",
   TEAM_INVITES: "fs_teamInvites",
+  SAM_SEARCH_SETTINGS: "fs_samSearchSettings",
+  // Hermes Agent Collections
+  HERMES_CONFIG: "fs_hermesConfig",
+  HERMES_SKILLS: "fs_hermesSkills",
+  HERMES_AUTOMATIONS: "fs_hermesAutomations",
+  HERMES_NOTIFICATIONS: "fs_hermesNotifications",
 } as const;
 
 // ============================================================================
@@ -928,4 +934,113 @@ export interface FSDiscountCodeDoc extends BaseFSDocument {
     validForAnnualOnly?: boolean;
   };
   isActive: boolean;
+}
+
+// ============================================================================
+// SAM.gov Search Settings
+// ============================================================================
+
+export interface FSSamSearchSettingsDoc extends BaseFSDocument {
+  enabled: boolean;
+  contractCategories: string[];
+  noticeTypes: string[];
+  naicsCodes: Array<{ code: string; description: string }>;
+  setAsides: string[];
+  targetAgencies: string[];
+  searchKeywords: string[];
+  enableBAA: boolean;
+  baaKeywords: string[];
+  popStates: string[];
+  responseDateDays: number;
+  postedDateDays: number;
+  universityId?: string; // Optional: scope to specific university
+}
+
+// ============================================================================
+// Hermes Agent Configuration
+// ============================================================================
+
+export type HermesHostingMode = "vercel-edge" | "backend-service" | "hybrid";
+export type HermesModelProvider = "openai" | "openrouter" | "nous" | "anthropic" | "custom";
+export type HermesNotificationDigest = "daily" | "weekly" | "realtime";
+
+export interface FSHermesConfigDoc extends BaseFSDocument {
+  hosting: {
+    mode: HermesHostingMode;
+    backendUrl?: string;
+    region?: string;
+  };
+  interfaces: {
+    chat: {
+      enabled: boolean;
+      default: boolean;
+    };
+    messaging: {
+      enabled: boolean;
+      platforms: Array<"telegram" | "discord" | "email">;
+      config: Record<string, any>;
+    };
+    cli: {
+      enabled: boolean;
+      allowedUsers: string[];
+    };
+  };
+  models: {
+    defaultProvider: HermesModelProvider;
+    providers: {
+      openai?: { apiKey: string; model: string };
+      openrouter?: { apiKey: string; model: string };
+      nous?: { apiKey: string; model: string };
+      anthropic?: { apiKey: string; model: string };
+      custom?: { endpoint: string; apiKey: string; model: string };
+    };
+    useCaseDefaults: {
+      analysis: string;
+      notifications: string;
+      chat: string;
+    };
+  };
+  samgov: {
+    pollingInterval: number; // in minutes
+    enabledUniversities: string[];
+    notificationDigest: HermesNotificationDigest;
+  };
+}
+
+export interface FSHermesSkillDoc extends BaseFSDocument {
+  name: string;
+  description: string;
+  category: string;
+  code: string;
+  parameters: Record<string, any>;
+  isPublic: boolean;
+  createdBy: string;
+  universityId?: string;
+  usageCount: number;
+  lastUsedAt?: Timestamp;
+}
+
+export interface FSHermesAutomationDoc extends BaseFSDocument {
+  name: string;
+  type: "samgov-poll" | "notification" | "data-sync" | "custom";
+  schedule: string; // cron expression
+  enabled: boolean;
+  config: Record<string, any>;
+  lastRunAt?: Timestamp;
+  nextRunAt?: Timestamp;
+  status: "idle" | "running" | "error";
+  errorCount: number;
+  lastError?: string;
+}
+
+export interface FSHermesNotificationDoc extends BaseFSDocument {
+  type: "opportunity" | "deadline" | "compliance" | "system";
+  priority: "low" | "medium" | "high" | "urgent";
+  title: string;
+  message: string;
+  recipient: string; // user ID or university ID
+  channels: Array<"chat" | "email" | "telegram" | "discord">;
+  read: boolean;
+  readAt?: Timestamp;
+  metadata?: Record<string, any>;
 }
