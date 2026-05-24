@@ -26,13 +26,24 @@ interface OnboardingFormData {
   primaryContactEmail: string;
   primaryContactPhone: string;
 
-  // Step 3: Capabilities
+  // Step 3: Research Strengths & Capabilities
   capabilities: string[];
+  researchStrengths: string[];
+  preferredContractTypes: string[];
+  targetAgencies: string[];
+  minOpportunityValue: string;
+  maxOpportunityValue: string;
 
-  // Step 4: Team Members
+  // Step 4: Teaming & Consortium Preferences
+  interestedInTeaming: boolean;
+  preferredTeamingRegions: string[];
+  complementaryStrengths: string[];
+  consortiumInterests: string[];
+
+  // Step 5: Team Members
   teamMembers: { name: string; email: string; role: string }[];
 
-  // Step 5: SAM.gov
+  // Step 6: SAM.gov
   samRegistered: boolean;
   ueiNumber: string;
   cageCode: string;
@@ -50,6 +61,46 @@ const capabilityOptions = [
   "Data Science",
   "Materials Science",
   "Defense Research",
+  "Environmental Science",
+  "Health Disparities",
+  "Social Justice Research",
+  "Economic Development",
+  "Advanced Manufacturing",
+];
+
+const contractTypeOptions = [
+  "SBIR/STTR",
+  "Research Grants",
+  "Cooperative Agreements",
+  "Service Contracts",
+  "Training Grants",
+  "Equipment Grants",
+];
+
+const agencyOptions = [
+  "NSF",
+  "NIH",
+  "DoD",
+  "DOE",
+  "NASA",
+  "USDA",
+  "DHS",
+  "DOT",
+  "DOC",
+  "VA",
+  "EPA",
+  "Any Federal Agency",
+];
+
+const regionOptions = ["Southeast", "Northeast", "Midwest", "Southwest", "West", "Nationwide"];
+
+const consortiumOptions = [
+  "HBCU Research Alliance",
+  "STEM Consortium",
+  "Defense Research Network",
+  "Health Equity Coalition",
+  "Energy Research Partnership",
+  "Agricultural Innovation Hub",
 ];
 
 const roleOptions = [
@@ -62,10 +113,11 @@ const roleOptions = [
 const steps = [
   { id: 1, label: "Institution Profile", icon: GraduationCap },
   { id: 2, label: "Primary Contact", icon: Shield },
-  { id: 3, label: "Capabilities", icon: Sparkles },
-  { id: 4, label: "Team Setup", icon: Users },
-  { id: 5, label: "SAM.gov Status", icon: FileText },
-  { id: 6, label: "Review & Submit", icon: CheckCircle2 },
+  { id: 3, label: "Research Strengths", icon: Sparkles },
+  { id: 4, label: "Teaming Preferences", icon: Users },
+  { id: 5, label: "Team Setup", icon: Users },
+  { id: 6, label: "SAM.gov Status", icon: FileText },
+  { id: 7, label: "Review & Submit", icon: CheckCircle2 },
 ];
 
 export default function HBCUOnboardingWizard() {
@@ -87,6 +139,15 @@ export default function HBCUOnboardingWizard() {
     primaryContactEmail: "",
     primaryContactPhone: "",
     capabilities: [],
+    researchStrengths: [],
+    preferredContractTypes: [],
+    targetAgencies: [],
+    minOpportunityValue: "100000",
+    maxOpportunityValue: "5000000",
+    interestedInTeaming: true,
+    preferredTeamingRegions: [],
+    complementaryStrengths: [],
+    consortiumInterests: [],
     teamMembers: [{ name: "", email: "", role: "researcher" }],
     samRegistered: false,
     ueiNumber: "",
@@ -109,8 +170,36 @@ export default function HBCUOnboardingWizard() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // TODO: Save to Firestore and send invitation emails
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Save to Firestore and trigger welcome emails
+    try {
+      const response = await fetch("/api/fedsignal/onboarding/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formData }),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to submit registration");
+      }
+      
+      // Store profile in session for recommendations
+      sessionStorage.setItem("fs_university_profile", JSON.stringify({
+        name: formData.universityName,
+        capabilities: formData.capabilities,
+        researchStrengths: formData.researchStrengths,
+        preferredContractTypes: formData.preferredContractTypes,
+        targetAgencies: formData.targetAgencies,
+        teamingPreferences: {
+          interested: formData.interestedInTeaming,
+          regions: formData.preferredTeamingRegions,
+          complementary: formData.complementaryStrengths,
+        },
+      }));
+    } catch (error) {
+      console.error("Registration error:", error);
+    }
+    
     setIsSubmitting(false);
     setIsComplete(true);
   };
@@ -231,10 +320,11 @@ export default function HBCUOnboardingWizard() {
             <CardDescription>
               {currentStep === 1 && "Tell us about your institution"}
               {currentStep === 2 && "Who is the primary point of contact?"}
-              {currentStep === 3 && "What are your research capabilities?"}
-              {currentStep === 4 && "Add team members who need access"}
-              {currentStep === 5 && "SAM.gov registration status"}
-              {currentStep === 6 && "Review your information before submitting"}
+              {currentStep === 3 && "What are your research strengths and funding preferences?"}
+              {currentStep === 4 && "Set your teaming and consortium preferences"}
+              {currentStep === 5 && "Add team members who need access"}
+              {currentStep === 6 && "SAM.gov registration status"}
+              {currentStep === 7 && "Review your information before submitting"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -378,40 +468,249 @@ export default function HBCUOnboardingWizard() {
 
             {/* Step 3: Capabilities */}
             {currentStep === 3 && (
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">Select all research areas where your institution has expertise:</p>
-                <div className="flex flex-wrap gap-2">
-                  {capabilityOptions.map((capability) => (
-                    <button
-                      key={capability}
-                      type="button"
-                      onClick={() => toggleCapability(capability)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        formData.capabilities.includes(capability)
-                          ? "bg-[#1a56db] text-white"
-                          : "bg-muted hover:bg-muted/80"
-                      }`}
-                    >
-                      {formData.capabilities.includes(capability) && "✓ "}
-                      {capability}
-                    </button>
-                  ))}
-                </div>
-                <div className="pt-4">
-                  <div className="text-sm font-medium mb-2">Selected ({formData.capabilities.length}):</div>
+              <div className="space-y-6">
+                {/* Research Capabilities */}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Core Research Capabilities</h4>
+                    <p className="text-sm text-muted-foreground mb-3">Select your institution's primary research strengths:</p>
+                  </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.capabilities.map((cap) => (
-                      <span key={cap} className="px-3 py-1 bg-[#1a56db]/10 text-[#1a56db] rounded-full text-sm">
-                        {cap}
-                      </span>
+                    {capabilityOptions.map((capability) => (
+                      <button
+                        key={capability}
+                        type="button"
+                        onClick={() => toggleCapability(capability)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                          formData.capabilities.includes(capability)
+                            ? "bg-[#1a56db] text-white"
+                            : "bg-muted hover:bg-muted/80"
+                        }`}
+                      >
+                        {formData.capabilities.includes(capability) && "✓ "}
+                        {capability}
+                      </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Contract Type Preferences */}
+                <div className="space-y-4 pt-4 border-t">
+                  <div>
+                    <h4 className="font-medium mb-2">Preferred Contract Types</h4>
+                    <p className="text-sm text-muted-foreground mb-3">What types of funding are you most interested in?</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {contractTypeOptions.map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => {
+                          const updated = formData.preferredContractTypes.includes(type)
+                            ? formData.preferredContractTypes.filter(t => t !== type)
+                            : [...formData.preferredContractTypes, type];
+                          updateFormData("preferredContractTypes", updated);
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                          formData.preferredContractTypes.includes(type)
+                            ? "bg-green-600 text-white"
+                            : "bg-muted hover:bg-muted/80"
+                        }`}
+                      >
+                        {formData.preferredContractTypes.includes(type) && "✓ "}
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Target Agencies */}
+                <div className="space-y-4 pt-4 border-t">
+                  <div>
+                    <h4 className="font-medium mb-2">Target Agencies</h4>
+                    <p className="text-sm text-muted-foreground mb-3">Which agencies do you want to focus on?</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {agencyOptions.map((agency) => (
+                      <button
+                        key={agency}
+                        type="button"
+                        onClick={() => {
+                          const updated = formData.targetAgencies.includes(agency)
+                            ? formData.targetAgencies.filter(a => a !== agency)
+                            : [...formData.targetAgencies, agency];
+                          updateFormData("targetAgencies", updated);
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                          formData.targetAgencies.includes(agency)
+                            ? "bg-purple-600 text-white"
+                            : "bg-muted hover:bg-muted/80"
+                        }`}
+                      >
+                        {formData.targetAgencies.includes(agency) && "✓ "}
+                        {agency}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Opportunity Value Range */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h4 className="font-medium">Opportunity Value Range</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Minimum ($)</Label>
+                      <Input
+                        type="number"
+                        value={formData.minOpportunityValue}
+                        onChange={(e) => updateFormData("minOpportunityValue", e.target.value)}
+                        placeholder="100000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Maximum ($)</Label>
+                      <Input
+                        type="number"
+                        value={formData.maxOpportunityValue}
+                        onChange={(e) => updateFormData("maxOpportunityValue", e.target.value)}
+                        placeholder="5000000"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Step 4: Team Members */}
+            {/* Step 4: Teaming Preferences */}
             {currentStep === 4 && (
+              <div className="space-y-6">
+                <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Users className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div className="text-sm text-blue-800">
+                    <strong>HBCU Teaming & Consortium Opportunities</strong>
+                    <p className="mt-1">
+                      FedSignal's AI matches you with complementary HBCUs for collaborative opportunities and consortium bids.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Interest in Teaming */}
+                <div className="space-y-4">
+                  <h4 className="font-medium">Interested in Teaming?</h4>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={formData.interestedInTeaming}
+                        onChange={() => updateFormData("interestedInTeaming", true)}
+                        className="w-4 h-4"
+                      />
+                      <span>Yes, recommend teaming partners</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={!formData.interestedInTeaming}
+                        onChange={() => updateFormData("interestedInTeaming", false)}
+                        className="w-4 h-4"
+                      />
+                      <span>No, we'll work independently</span>
+                    </label>
+                  </div>
+                </div>
+
+                {formData.interestedInTeaming && (
+                  <>
+                    {/* Preferred Regions */}
+                    <div className="space-y-4 pt-4 border-t">
+                      <h4 className="font-medium">Preferred Teaming Regions</h4>
+                      <p className="text-sm text-muted-foreground">Which regions would you like to team with?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {regionOptions.map((region) => (
+                          <button
+                            key={region}
+                            type="button"
+                            onClick={() => {
+                              const updated = formData.preferredTeamingRegions.includes(region)
+                                ? formData.preferredTeamingRegions.filter(r => r !== region)
+                                : [...formData.preferredTeamingRegions, region];
+                              updateFormData("preferredTeamingRegions", updated);
+                            }}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                              formData.preferredTeamingRegions.includes(region)
+                                ? "bg-[#1a56db] text-white"
+                                : "bg-muted hover:bg-muted/80"
+                            }`}
+                          >
+                            {formData.preferredTeamingRegions.includes(region) && "✓ "}
+                            {region}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Complementary Strengths */}
+                    <div className="space-y-4 pt-4 border-t">
+                      <h4 className="font-medium">Complementary Strengths Sought</h4>
+                      <p className="text-sm text-muted-foreground">What capabilities would you like in teaming partners?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {capabilityOptions.map((cap) => (
+                          <button
+                            key={cap}
+                            type="button"
+                            onClick={() => {
+                              const updated = formData.complementaryStrengths.includes(cap)
+                                ? formData.complementaryStrengths.filter(c => c !== cap)
+                                : [...formData.complementaryStrengths, cap];
+                              updateFormData("complementaryStrengths", updated);
+                            }}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                              formData.complementaryStrengths.includes(cap)
+                                ? "bg-amber-600 text-white"
+                                : "bg-muted hover:bg-muted/80"
+                            }`}
+                          >
+                            {formData.complementaryStrengths.includes(cap) && "✓ "}
+                            {cap}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Consortium Interests */}
+                    <div className="space-y-4 pt-4 border-t">
+                      <h4 className="font-medium">Consortium Interests</h4>
+                      <p className="text-sm text-muted-foreground">Which consortiums would you like to join?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {consortiumOptions.map((consortium) => (
+                          <button
+                            key={consortium}
+                            type="button"
+                            onClick={() => {
+                              const updated = formData.consortiumInterests.includes(consortium)
+                                ? formData.consortiumInterests.filter(c => c !== consortium)
+                                : [...formData.consortiumInterests, consortium];
+                              updateFormData("consortiumInterests", updated);
+                            }}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                              formData.consortiumInterests.includes(consortium)
+                                ? "bg-purple-600 text-white"
+                                : "bg-muted hover:bg-muted/80"
+                            }`}
+                          >
+                            {formData.consortiumInterests.includes(consortium) && "✓ "}
+                            {consortium}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Step 5: Team Members */}
+            {currentStep === 5 && (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
                   Add team members who need access to FedSignal. They will receive invitation emails to create their accounts.
@@ -460,8 +759,8 @@ export default function HBCUOnboardingWizard() {
               </div>
             )}
 
-            {/* Step 5: SAM.gov */}
-            {currentStep === 5 && (
+            {/* Step 6: SAM.gov */}
+            {currentStep === 6 && (
               <div className="space-y-4">
                 <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
@@ -526,8 +825,8 @@ export default function HBCUOnboardingWizard() {
               </div>
             )}
 
-            {/* Step 6: Review */}
-            {currentStep === 6 && (
+            {/* Step 7: Review */}
+            {currentStep === 7 && (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
