@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { FileText, Sparkles, Wand2, Save, Download, History, CheckCircle } from "lucide-react";
+import { FileText, Sparkles, Wand2, Save, Download, History, CheckCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function ProposalPalPage() {
   const [prompt, setPrompt] = useState("");
@@ -125,6 +126,12 @@ export default function ProposalPalPage() {
               <CardDescription>Review and edit before saving</CardDescription>
             </div>
             <div className="flex items-center gap-2">
+              <Link href="/fedsignal/pipeline?step=2">
+                <Button variant="default" size="sm" className="bg-[#1a56db] hover:bg-[#1547b5]">
+                  <ArrowRight className="mr-2 h-4 w-4" />
+                  Send to Pipeline
+                </Button>
+              </Link>
               <Button variant="outline" size="sm">
                 <Download className="mr-2 h-4 w-4" />
                 Export

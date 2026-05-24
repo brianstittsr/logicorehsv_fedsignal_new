@@ -15,72 +15,82 @@ interface NavItem {
   badge?: string;
   badgeColor?: "red" | "amber" | "default";
   href: string;
+  step?: number;
 }
 
 interface NavSection {
   label: string;
+  icon?: string;
   items: NavItem[];
+  highlight?: boolean;
 }
 
 const navSections: NavSection[] = [
   {
-    label: "Reports",
+    label: "🏠 Home",
+    icon: "🏠",
     items: [
-      { id: "grants", label: "Grant Tracker", icon: "📋", href: "/fedsignal/grants" },
+      { id: "dashboard", label: "Command Center", icon: "⬡", href: "/fedsignal" },
+      { id: "alerts", label: "Strategic Alerts", icon: "�", badge: "6", badgeColor: "red", href: "/fedsignal/alerts" },
       { id: "board", label: "Board Report", icon: "📑", href: "/fedsignal/board" },
     ],
   },
   {
-    label: "Intelligence",
+    label: "🔍 Opportunity Intel",
+    icon: "🔍",
     items: [
-      { id: "dashboard", label: "Command Center", icon: "⬡", href: "/fedsignal" },
       { id: "opportunities", label: "Opportunity Feed", icon: "📡", badge: "47", href: "/fedsignal/opportunities" },
+      { id: "sbir", label: "SBIR / STTR Tracker", icon: "�", href: "/fedsignal/sbir" },
       { id: "radar", label: "FedSignal Radar", icon: "📊", href: "/fedsignal/radar" },
-      { id: "alerts", label: "Strategic Alerts", icon: "🔔", badge: "6", badgeColor: "red", href: "/fedsignal/alerts" },
-    ],
-  },
-  {
-    label: "University",
-    items: [
-      { id: "capabilities", label: "Capability Graph", icon: "🔬", href: "/fedsignal/capabilities" },
-      { id: "leadership", label: "Leadership", icon: "👤", href: "/fedsignal/leadership" },
       { id: "scoreboard", label: "HBCU Scoreboard", icon: "🏆", href: "/fedsignal/scoreboard" },
     ],
   },
   {
-    label: "Partnerships",
+    label: "📋 Submission Pipeline",
+    icon: "📋",
+    highlight: true,
+    items: [
+      { id: "pipeline", label: "① Identify → Pipeline", icon: "🎯", href: "/fedsignal/pipeline", step: 1 },
+      { id: "proposalpal", label: "② Proposal Pal", icon: "🏆", badge: "AI", href: "/fedsignal/proposalpal" },
+      { id: "rficreator", label: "③ RFI Creator", icon: "📝", badge: "AI", href: "/fedsignal/rficreator" },
+      { id: "fanda", label: "④ F&A Calculator", icon: "🧮", href: "/fedsignal/fanda" },
+      { id: "grants", label: "⑤ Grant Tracker", icon: "📋", href: "/fedsignal/grants" },
+      { id: "winloss", label: "⑥ Win/Loss Tracker", icon: "📈", href: "/fedsignal/winloss" },
+    ],
+  },
+  {
+    label: "🤝 Partnerships & BD",
+    icon: "🤝",
     items: [
       { id: "directory", label: "HBCU Network", icon: "🎓", badge: "101", href: "/fedsignal/directory" },
-      { id: "marketplace", label: "Contractor Market", icon: "🤝", href: "/fedsignal/marketplace" },
       { id: "consortium", label: "Consortiums", icon: "⬡", badge: "3", badgeColor: "amber", href: "/fedsignal/consortium" },
+      { id: "teaming", label: "Teaming", icon: "🤜🤛", href: "/fedsignal/teaming" },
+      { id: "subplan", label: "Sub-Contracting Plan", icon: "📄", href: "/fedsignal/subplan" },
+      { id: "marketplace", label: "Contractor Market", icon: "🤝", href: "/fedsignal/marketplace" },
+      { id: "crm", label: "CRM & Contacts", icon: "�", badge: "PRO", badgeColor: "amber", href: "/fedsignal/crm" },
+      { id: "contacts", label: "Contacts", icon: "📇", href: "/fedsignal/contacts" },
     ],
   },
   {
-    label: "Win Tools",
+    label: "📁 Capability & Content",
+    icon: "📁",
     items: [
-      { id: "proposalpal", label: "Proposal Pal", icon: "🏆", badge: "AI", href: "/fedsignal/proposalpal" },
-      { id: "rficreator", label: "RFI Creator", icon: "📝", badge: "AI", href: "/fedsignal/rficreator" },
-    ],
-  },
-  {
-    label: "Content & Growth",
-    items: [
+      { id: "capabilities", label: "Capability Graph", icon: "🔬", href: "/fedsignal/capabilities" },
       { id: "capvault", label: "Capability Vault", icon: "🗂️", href: "/fedsignal/capvault" },
+      { id: "gammadeck", label: "GammaDeck (Pitch Decks)", icon: "📊", href: "/fedsignal/gammadeck" },
       { id: "contentstudio", label: "Content Studio", icon: "✨", badge: "AI", href: "/fedsignal/contentstudio" },
       { id: "calendar", label: "Content Calendar", icon: "📅", href: "/fedsignal/calendar" },
+      { id: "newsletter", label: "Newsletter", icon: "�", href: "/fedsignal/newsletter" },
+      { id: "leadership", label: "Leadership", icon: "�", href: "/fedsignal/leadership" },
     ],
   },
   {
-    label: "BD & CRM",
+    label: "⚙️ System",
+    icon: "⚙️",
     items: [
-      { id: "crm", label: "CRM & Contacts", icon: "👥", badge: "PRO", badgeColor: "amber", href: "/fedsignal/crm" },
-      { id: "winloss", label: "Win/Loss Tracker", icon: "📊", href: "/fedsignal/winloss" },
-    ],
-  },
-  {
-    label: "System",
-    items: [
+      { id: "settings", label: "Settings", icon: "⚙️", href: "/fedsignal/settings" },
       { id: "bug-tracker", label: "Bug Tracker", icon: "🐛", badge: "4", badgeColor: "red", href: "/fedsignal/bug-tracker" },
+      { id: "admin", label: "Admin Panel", icon: "🔐", href: "/portal/admin/fedsignal" },
     ],
   },
 ];
@@ -95,14 +105,12 @@ export function FSSidebar({ universityId = "huston-tillotson", onUniversityChang
   const router = useRouter();
   const [selectedUni, setSelectedUni] = useState(universityId);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-    Reports: false,
-    Intelligence: true,
-    University: true,
-    Partnerships: true,
-    "Win Tools": true,
-    "Content & Growth": true,
-    "BD & CRM": true,
-    System: true,
+    "🏠 Home": false,
+    "🔍 Opportunity Intel": false,
+    "📋 Submission Pipeline": false,
+    "🤝 Partnerships & BD": true,
+    "📁 Capability & Content": true,
+    "⚙️ System": true,
   });
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -124,8 +132,10 @@ export function FSSidebar({ universityId = "huston-tillotson", onUniversityChang
     return false;
   };
 
+  const isInPipeline = pathname === "/fedsignal/pipeline" || pathname.startsWith("/fedsignal/pipeline/");
+
   return (
-    <nav className="w-[230px] flex-shrink-0 flex flex-col h-screen overflow-y-auto overflow-x-hidden bg-[#0f2a4a] text-white">
+    <nav className="w-[240px] flex-shrink-0 flex flex-col h-screen overflow-y-auto overflow-x-hidden bg-[#0f2a4a] text-white">
       {/* Logo */}
       <div className="p-4 border-b border-white/10 flex items-center gap-2.5">
         <Image
@@ -157,6 +167,31 @@ export function FSSidebar({ universityId = "huston-tillotson", onUniversityChang
           ))}
         </select>
       </div>
+
+      {/* Pipeline Progress Indicator */}
+      {isInPipeline && (
+        <div className="mx-3 mt-3 p-2.5 bg-gradient-to-r from-[#1a56db]/30 to-[#4d94ff]/20 border border-[#4d94ff]/40 rounded-lg">
+          <div className="text-[9px] font-bold tracking-[0.12em] uppercase text-[#4d94ff] mb-1.5">
+            Submission Pipeline
+          </div>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4].map((step) => (
+              <div
+                key={step}
+                className={cn(
+                  "flex-1 h-1.5 rounded-full transition-all",
+                  pathname.includes(`step=${step}`) || (step === 1 && pathname === "/fedsignal/pipeline")
+                    ? "bg-[#4d94ff]"
+                    : "bg-white/20"
+                )}
+              />
+            ))}
+          </div>
+          <div className="text-[10px] text-white/60 mt-1.5">
+            Step {new URLSearchParams(typeof window !== "undefined" ? window.location.search : "").get("step") || "1"} of 4
+          </div>
+        </div>
+      )}
 
       {/* User Profile Dropdown */}
       <div className="p-3 border-b border-white/10 relative">
@@ -205,14 +240,20 @@ export function FSSidebar({ universityId = "huston-tillotson", onUniversityChang
       <div className="flex-1 py-2">
         {navSections.map((section) => {
           const isCollapsed = collapsedSections[section.label];
+          const isPipeline = section.highlight;
           return (
-            <div key={section.label} className="py-1">
+            <div key={section.label} className={cn("py-1", isPipeline && "px-2")}>
               <button
                 onClick={() => toggleSection(section.label)}
-                className="w-full flex items-center gap-2 px-4 py-1.5 text-[9px] font-bold tracking-[0.15em] uppercase text-white/35 hover:text-white/50 transition-colors"
+                className={cn(
+                  "w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold tracking-[0.1em] uppercase transition-colors rounded-md",
+                  isPipeline
+                    ? "text-[#4d94ff] bg-gradient-to-r from-[#1a56db]/20 to-transparent border border-[#4d94ff]/30"
+                    : "text-white/40 hover:text-white/60"
+                )}
               >
                 {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                {section.label}
+                <span className="flex-1 text-left">{section.label}</span>
               </button>
               {!isCollapsed && section.items.map((item) => (
                 <Link
@@ -222,7 +263,8 @@ export function FSSidebar({ universityId = "huston-tillotson", onUniversityChang
                     "w-full flex items-center gap-2.5 px-4 py-2 text-[13px] text-white/70 border-l-[3px] transition-all duration-150",
                     isActive(item.href)
                       ? "bg-[rgba(26,86,219,0.25)] text-white border-l-[#4d94ff] font-semibold"
-                      : "border-l-transparent hover:bg-white/[0.07] hover:text-white hover:border-l-[rgba(77,148,255,0.5)]"
+                      : "border-l-transparent hover:bg-white/[0.07] hover:text-white hover:border-l-[rgba(77,148,255,0.5)]",
+                    item.step && "pl-6"
                   )}
                 >
                   <span className="text-[15px] w-4 text-center flex-shrink-0">{item.icon}</span>
@@ -254,6 +296,23 @@ export function FSSidebar({ universityId = "huston-tillotson", onUniversityChang
         >
           ← Back to LogiCore HSV
         </Link>
+      </div>
+
+      {/* Floating Hermes AI Button */}
+      <div className="p-3">
+        <button
+          onClick={() => {
+            // Trigger Hermes chat via global event
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("toggleHermesChat"));
+            }
+          }}
+          className="w-full flex items-center gap-2.5 p-3 bg-gradient-to-r from-[#1a56db] to-[#4d94ff] border border-[#4d94ff]/50 rounded-lg text-xs text-white font-semibold hover:from-[#1e4bb8] hover:to-[#3d7fd9] transition-all shadow-lg shadow-[#1a56db]/25"
+        >
+          <span className="text-lg">🤖</span>
+          <span className="flex-1 text-left">Ask Hermes AI</span>
+          <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded">AI</span>
+        </button>
       </div>
     </nav>
   );

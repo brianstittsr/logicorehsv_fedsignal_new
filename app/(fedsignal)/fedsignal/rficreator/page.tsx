@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { FileText, Sparkles, Wand2, Download } from "lucide-react";
+import { FileText, Sparkles, Wand2, Download, ArrowRight, Paperclip } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function RFICreatorPage() {
   const [generating, setGenerating] = useState(false);
@@ -56,6 +57,14 @@ export default function RFICreatorPage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">Generated RFI responses will appear here.</p>
+            <div className="mt-4 pt-4 border-t">
+              <Link href="/fedsignal/pipeline?step=2">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Paperclip className="mr-2 h-4 w-4" />
+                  Attach to Active Pipeline
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>

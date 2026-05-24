@@ -24,7 +24,9 @@ import {
   Tag,
   Bookmark,
   Share2,
+  ArrowRight,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Opportunity {
   id: string;
@@ -46,6 +48,7 @@ interface Opportunity {
 }
 
 export default function OpportunitiesPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [agencyFilter, setAgencyFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -53,6 +56,47 @@ export default function OpportunitiesPage() {
   const [savedOpportunities, setSavedOpportunities] = useState<string[]>([]);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const startPipeline = (opp: Opportunity) => {
+    // Save to sessionStorage for pipeline to pick up
+    const workspace = {
+      opportunityId: opp.id,
+      title: opp.title,
+      agency: opp.agency,
+      solicitationNumber: opp.solicitationNumber,
+      naics: opp.tags.find(t => t.includes("NAICS")) || "",
+      deadline: opp.deadline,
+      amount: opp.amount,
+      description: opp.description,
+      setAsideType: opp.isHbcuSetAside ? "HBCU Set-Aside" : "None",
+      sf424: {
+        legalName: "Huston-Tillotson University",
+        ein: "74-1320421",
+        duns: "123456789",
+        address: "900 Chicon Street",
+        city: "Austin",
+        state: "TX",
+        zip: "78702",
+        congressionalDistrict: "TX-10",
+        projectTitle: opp.title,
+        proposedAmount: opp.amount.replace(/[^0-9.]/g, ""),
+        projectDuration: "",
+        projectDirector: "",
+        phone: "(512) 505-3000",
+        email: "research@htu.edu",
+      },
+      projectNarrative: "",
+      abstract: "",
+      budgetSummary: { directCosts: "", indirectCosts: "", totalCosts: "" },
+      keyPersonnel: [],
+      pastPerformance: [],
+      checklist: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    sessionStorage.setItem("fs_pipeline_workspace", JSON.stringify(workspace));
+    router.push("/fedsignal/pipeline?step=2");
+  };
 
   useEffect(() => {
     fetchOpportunities();
@@ -252,6 +296,10 @@ export default function OpportunitiesPage() {
                         <Link href={`/fedsignal/opportunities/${opp.id}`}>
                           Details
                         </Link>
+                      </Button>
+                      <Button size="sm" variant="default" onClick={() => startPipeline(opp)}>
+                        <ArrowRight className="mr-1 h-3 w-3" />
+                        Start Pipeline
                       </Button>
                       {opp.uiLink && (
                         <Button size="sm" variant="outline" asChild>
