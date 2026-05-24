@@ -51,6 +51,7 @@ const navSections: NavSection[] = [
     icon: "📋",
     highlight: true,
     items: [
+      { id: "pipeline-wizard", label: "✨ Pipeline Wizard", icon: "🧙", badge: "NEW", badgeColor: "red", href: "/fedsignal/pipeline-wizard" },
       { id: "pipeline", label: "① Identify → Pipeline", icon: "🎯", href: "/fedsignal/pipeline", step: 1 },
       { id: "proposalpal", label: "② Proposal Pal", icon: "🏆", badge: "AI", href: "/fedsignal/proposalpal" },
       { id: "rficreator", label: "③ RFI Creator", icon: "📝", badge: "AI", href: "/fedsignal/rficreator" },
