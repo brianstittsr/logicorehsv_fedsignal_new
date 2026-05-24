@@ -372,9 +372,19 @@ export default function GrantsPage() {
                     <span>{grant.attachments?.length || 0} attachments</span>
                   </div>
                 )}
-                <Button variant="outline" size="sm" className="w-full" asChild>
-                  <Link href={`/fedsignal/grants/${grant.id}`}>View Details</Link>
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1" asChild>
+                    <Link href={`/fedsignal/grants/${grant.id}`}>View Details</Link>
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    onClick={() => window.open(`/api/fedsignal/pipeline/generate?grantId=${grant.id}&format=zip`, '_blank')}
+                  >
+                    <Download className="mr-1 h-3 w-3" />
+                    Package
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -441,6 +451,14 @@ export default function GrantsPage() {
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/fedsignal/grants/${grant.id}`}>View</Link>
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      onClick={() => window.open(`/api/fedsignal/pipeline/generate?grantId=${grant.id}&format=zip`, '_blank')}
+                    >
+                      <Download className="mr-1 h-3 w-3" />
+                      Package
                     </Button>
                   </div>
                 </div>
