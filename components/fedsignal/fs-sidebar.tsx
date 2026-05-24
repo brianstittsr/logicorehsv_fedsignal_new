@@ -31,6 +31,7 @@ const navSections: NavSection[] = [
     icon: "🏠",
     items: [
       { id: "dashboard", label: "Command Center", icon: "⬡", href: "/fedsignal" },
+      { id: "recommendations", label: "AI Recommendations", icon: "✨", badge: "AI", href: "/fedsignal/recommendations" },
       { id: "alerts", label: "Strategic Alerts", icon: "�", badge: "6", badgeColor: "red", href: "/fedsignal/alerts" },
       { id: "board", label: "Board Report", icon: "📑", href: "/fedsignal/board" },
     ],
