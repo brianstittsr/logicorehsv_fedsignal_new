@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
+  // Pin the workspace root to this directory. A duplicate package-lock.json
+  // exists in the parent directory (Logiccore_FedSignal_HBCU), which causes
+  // Next.js/Turbopack to misdetect the workspace root and write the .next
+  // build output to the wrong location on Vercel.
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
+
   // Image optimization
   images: {
     formats: ["image/avif", "image/webp"],

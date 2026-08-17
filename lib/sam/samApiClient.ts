@@ -1,7 +1,8 @@
 /**
- * SAM.gov API Client - Using Public Web API Endpoints
+ * SAM.gov API Client - Using Public Web API Endpoints or Proxy Server
  * 
  * These endpoints are used by the SAM.gov website itself and don't require an API key.
+ * When a proxy server is configured (via SAM.gov settings), requests are routed through it.
  */
 
 // SAM.gov public web API endpoints - no API key required (Cgray method)
@@ -9,6 +10,72 @@
 const SAM_SEARCH_URL = "https://sam.gov/api/prod/sgs/v1/search/";
 const SAM_OPP_DETAIL_URL = "https://sam.gov/api/prod/opps/v2/opportunities";
 const SAM_RESOURCES_API_BASE_URL = "https://sam.gov/api/prod/opps/v3/opportunities";
+
+// Default proxy server URL
+const DEFAULT_PROXY_URL = "https://c-gray-samgovapiserver.vercel.app";
+
+// Cache for proxy config
+let cachedProxyConfig: { apiKey: string; serverUrl: string } | null = null;
+let proxyConfigCacheTime = 0;
+const PROXY_CONFIG_CACHE_DURATION = 60000; // 1 minute
+
+/**
+ * Get SAM.gov proxy configuration from Firestore settings or environment variables
+ * Follows the same pattern as getOpenAIApiKey in lib/openai-config.ts
+ */
+export async function getSamGovConfig(): Promise<{ apiKey: string; serverUrl: string } | null> {
+  // Check cache first
+  if (cachedProxyConfig && Date.now() - proxyConfigCacheTime < PROXY_CONFIG_CACHE_DURATION) {
+    return cachedProxyConfig;
+  }
+
+  try {
+    // Dynamic import to handle server-side properly
+    const { db } = await import("@/lib/firebase");
+    const { doc, getDoc } = await import("firebase/firestore");
+    const { COLLECTIONS } = await import("@/lib/schema");
+    
+    if (db) {
+      const docRef = doc(db, COLLECTIONS.PLATFORM_SETTINGS, "fedsignal-settings");
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data() as any;
+        if (data.integrations?.samGov?.apiKey) {
+          cachedProxyConfig = {
+            apiKey: data.integrations.samGov.apiKey,
+            serverUrl: data.integrations.samGov.serverUrl || DEFAULT_PROXY_URL,
+          };
+          proxyConfigCacheTime = Date.now();
+          return cachedProxyConfig;
+        }
+      }
+    }
+  } catch (error) {
+    // Silently fail - will use env vars as fallback
+    console.log("Firebase settings not available for SAM.gov, using environment variables");
+  }
+
+  // Fallback: Environment variables
+  if (process.env.SAM_GOV_API_KEY) {
+    cachedProxyConfig = {
+      apiKey: process.env.SAM_GOV_API_KEY,
+      serverUrl: process.env.SAM_GOV_SERVER_URL || DEFAULT_PROXY_URL,
+    };
+    proxyConfigCacheTime = Date.now();
+    return cachedProxyConfig;
+  }
+
+  return null;
+}
+
+/**
+ * Clear the cached proxy config (call this when settings are updated)
+ */
+export function clearSamGovConfigCache(): void {
+  cachedProxyConfig = null;
+  proxyConfigCacheTime = 0;
+}
 
 export interface SamSearchParams {
   q?: string;
@@ -101,12 +168,137 @@ const SAM_HEADERS = {
  * Search SAM.gov opportunities using the public web API (no API key required)
  * Uses /sgs/v1/search/ with index=opp to filter to contract opportunities only
  * Based on the working Cgray implementation
+ * When proxy is configured, routes through the proxy server with API key
  */
 export async function searchOpportunities(
   params: SamSearchParams
 ): Promise<SamSearchResponse> {
+  // Try proxy first if configured
+  const proxyConfig = await getSamGovConfig();
+  if (proxyConfig) {
+    try {
+      return await searchOpportunitiesViaProxy(params, proxyConfig);
+    } catch (proxyError) {
+      console.warn("[SAM API Client] Proxy search failed, falling back to direct SAM.gov:", proxyError);
+      // Fall through to direct method
+    }
+  }
+
+  // Direct SAM.gov API (original implementation)
+  return searchOpportunitiesDirect(params);
+}
+
+/**
+ * Search via proxy server (SAM.gov API shape with api_key parameter)
+ */
+async function searchOpportunitiesViaProxy(
+  params: SamSearchParams,
+  proxyConfig: { apiKey: string; serverUrl: string }
+): Promise<SamSearchResponse> {
+  console.log("[SAM API Client] Searching via proxy:", { serverUrl: proxyConfig.serverUrl, q: params.q });
+
+  const requestedLimit = params.limit || 100;
+  const MAX_RESULTS = Math.min(requestedLimit, 1000);
+  const PAGE_SIZE = 10;
+  const allOpportunities: SamOpportunity[] = [];
+  let totalRecords = 0;
+  let currentPage = Math.floor((params.offset || 0) / PAGE_SIZE);
+  let pageCount = 0;
+  const MAX_PAGES = Math.ceil(MAX_RESULTS / PAGE_SIZE);
+
+  while (pageCount < MAX_PAGES) {
+    // Build params for proxy - mirrors SAM.gov official API shape
+    const urlParams: Record<string, string> = {
+      api_key: proxyConfig.apiKey,
+      limit: String(PAGE_SIZE),
+      page: String(currentPage),
+      sort: "-modifiedDate",
+    };
+
+    // Active status filter (default true)
+    const isActive = params.is_active ?? "true";
+    if (isActive === "true") urlParams.is_active = "true";
+    else if (isActive === "false") urlParams.is_active = "false";
+
+    // Keyword search
+    if (params.q) {
+      const kw = params.q.trim();
+      urlParams.q = kw.includes(" ") ? `"${kw}"` : kw;
+    }
+
+    if (params.naics_code) urlParams.naics = params.naics_code;
+    if (params.psc_code) urlParams.psc = params.psc_code;
+    if (params.set_aside) urlParams.set_aside = params.set_aside.toUpperCase();
+    if (params.notice_type) urlParams.notice_type = params.notice_type;
+    if (params.pop_state) urlParams.pop_state = params.pop_state.toUpperCase();
+    if (params.posted_from) urlParams.posted_from = params.posted_from;
+    if (params.posted_to) urlParams.posted_to = params.posted_to;
+    if (params.response_date_from) urlParams.response_date_from = params.response_date_from;
+    if (params.response_date_to) urlParams.response_date_to = params.response_date_to;
+
+    const url = `${proxyConfig.serverUrl}/opportunities?` +
+      Object.keys(urlParams).map(key => `${key}=${encodeURIComponent(urlParams[key])}`).join("&");
+
+    console.log(`[SAM API Client] Proxy fetching page ${pageCount + 1} (api page: ${currentPage})`);
+
+    const response = await fetch(url, { method: "GET", headers: SAM_HEADERS });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("[SAM API Client] Proxy API error:", response.status, errorText.substring(0, 200));
+      throw new Error(`Proxy API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (pageCount === 0) {
+      totalRecords = data.total || data.totalRecords || data.page?.totalElements || 0;
+      console.log(`[SAM API Client] Proxy total records available: ${totalRecords}`);
+    }
+
+    // Proxy may return different structure - handle both SAM.gov and proxy formats
+    const results: any[] = data._embedded?.results || data.opportunities || data.data || [];
+    console.log(`[SAM API Client] Proxy page ${pageCount + 1} returned ${results.length} results`);
+
+    if (results.length === 0) break;
+
+    const transformed = transformSamResponse(results);
+    transformed.forEach((opp: SamOpportunity) => {
+      if (!allOpportunities.find(e => e.noticeId === opp.noticeId)) {
+        allOpportunities.push(opp);
+      }
+    });
+
+    console.log(`[SAM API Client] Proxy total so far: ${allOpportunities.length}`);
+
+    if (allOpportunities.length >= MAX_RESULTS) break;
+    if (results.length === 0) break;
+
+    currentPage++;
+    pageCount++;
+    await new Promise(resolve => setTimeout(resolve, 150));
+  }
+
+  console.log(`[SAM API Client] Proxy total opportunities fetched: ${allOpportunities.length}`);
+
+  return {
+    opportunities: allOpportunities,
+    total: totalRecords,
+    totalRecords,
+    query: params.q,
+    filters: params,
+  };
+}
+
+/**
+ * Search directly via SAM.gov public web API (no API key required)
+ * Original Cgray implementation
+ */
+async function searchOpportunitiesDirect(
+  params: SamSearchParams
+): Promise<SamSearchResponse> {
   try {
-    console.log("[SAM API Client] Searching with params:", { q: params.q, naics: params.naics_code });
+    console.log("[SAM API Client] Searching direct with params:", { q: params.q, naics: params.naics_code });
 
     const requestedLimit = params.limit || 100;
     const MAX_RESULTS = Math.min(requestedLimit, 1000);
@@ -216,8 +408,125 @@ export async function searchOpportunities(
 
 /**
  * Fetch detailed opportunity information
+ * When proxy is configured, routes through the proxy server with API key
  */
 export async function fetchOpportunityDetails(
+  noticeId: string
+): Promise<SamOpportunity | null> {
+  // Try proxy first if configured
+  const proxyConfig = await getSamGovConfig();
+  if (proxyConfig) {
+    try {
+      return await fetchOpportunityDetailsViaProxy(noticeId, proxyConfig);
+    } catch (proxyError) {
+      console.warn("[SAM API Client] Proxy fetch details failed, falling back to direct SAM.gov:", proxyError);
+      // Fall through to direct method
+    }
+  }
+
+  // Direct SAM.gov API (original implementation)
+  return fetchOpportunityDetailsDirect(noticeId);
+}
+
+/**
+ * Fetch detailed opportunity via proxy server
+ */
+async function fetchOpportunityDetailsViaProxy(
+  noticeId: string,
+  proxyConfig: { apiKey: string; serverUrl: string }
+): Promise<SamOpportunity | null> {
+  console.log("[SAM API Client] Fetching details via proxy:", { serverUrl: proxyConfig.serverUrl, noticeId });
+
+  const url = `${proxyConfig.serverUrl}/opportunities/${noticeId}?api_key=${proxyConfig.apiKey}&random=${Date.now()}`;
+
+  const response = await fetch(url, { method: "GET", headers: SAM_HEADERS });
+
+  if (!response.ok) {
+    console.warn(`[SAM API Client] Proxy fetchOpportunityDetails ${noticeId}: ${response.status}`);
+    throw new Error(`Proxy API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  // Proxy may return data in different formats - try to normalize
+  // Assume proxy returns similar structure to SAM.gov v2 detail API
+  const raw = data;
+  const data2 = raw.data2 || raw || {};
+  const resolvedNoticeId = raw.opportunityId || raw.id || raw.noticeId || noticeId;
+
+  // naics: v2 returns [{code: ["541715"], type: "primary"}] — extract first code string
+  const naicsRaw: any[] = data2.naics || [];
+  const naicsCode: string | undefined = naicsRaw[0]?.code?.[0] || naicsRaw[0]?.code || undefined;
+
+  // type: v2 returns short code "o","k","s" etc — map to readable label
+  const typeCodeMap: Record<string, string> = {
+    o: "Solicitation", k: "Combined Synopsis/Solicitation", p: "Presolicitation",
+    r: "Sources Sought", g: "Sale of Surplus Property", s: "Special Notice",
+    i: "Intent to Bundle", a: "Award Notice", u: "Justification",
+    j: "Justification and Approval", m: "Modification/Amendment",
+  };
+  const typeCode = data2.type || "";
+  const typeLabel = typeCodeMap[typeCode] || typeCode;
+
+  // setAside: v2 returns plain string "NONE", "SBA", etc — pass through as-is
+  const typeOfSetAside = data2.solicitation?.setAside || data2.setAside || undefined;
+
+  // contacts: v2 uses fullName not name
+  const rawContacts: any[] = data2.pointOfContact || [];
+  const contacts = rawContacts.map((c: any) => ({
+    name: c.fullName || c.name || "",
+    email: c.email || "",
+    phone: c.phone || "",
+    title: c.title || "",
+    type: c.type || "",
+  }));
+
+  // description: top-level array [{body: "<html>..."}]
+  const descArr: any[] = Array.isArray(raw.description) ? raw.description : (Array.isArray(data2.description) ? data2.description : []);
+  const description = descArr[0]?.body || descArr[0]?.content || data2.description || "";
+
+  // placeOfPerformance: v2 returns object directly (not array)
+  const pop = data2.placeOfPerformance || {};
+  const placeOfPerformance = pop ? {
+    city: pop.city?.name || pop.city || undefined,
+    state: pop.state?.code || pop.state?.name || pop.state || undefined,
+    zip: pop.zip || pop.zipCode || undefined,
+    country: pop.country?.code || pop.country?.name || pop.country || undefined,
+  } : undefined;
+
+  // Build a fully normalized object
+  const opportunity: SamOpportunity = {
+    noticeId: resolvedNoticeId,
+    title: data2.title || "Untitled",
+    solicitationNumber: data2.solicitationNumber || undefined,
+    type: typeLabel,
+    active: raw.archived === false && raw.cancelled === false ? "Yes" : "No",
+    postedDate: raw.postedDate || data2.postedDate,
+    responseDeadLine: data2.solicitation?.deadlines?.response || data2.responseDeadLine,
+    archiveDate: data2.archive?.date || data2.archiveDate,
+    lastModifiedDate: raw.modifiedDate || raw.lastModifiedDate || data2.lastModifiedDate,
+    naicsCode,
+    classificationCode: typeof data2.classificationCode === "string" ? data2.classificationCode : undefined,
+    typeOfSetAside,
+    description,
+    pointOfContact: contacts,
+    resourceLinks: [],
+    uiLink: `https://sam.gov/opp/${resolvedNoticeId}/view`,
+    placeOfPerformance,
+    organizationHierarchy: undefined,
+    department: undefined,
+    subTier: undefined,
+    office: undefined,
+  };
+
+  return opportunity;
+}
+
+/**
+ * Fetch detailed opportunity directly via SAM.gov public web API (no API key required)
+ * Original Cgray implementation
+ */
+async function fetchOpportunityDetailsDirect(
   noticeId: string
 ): Promise<SamOpportunity | null> {
   // Use the direct opportunity detail endpoint (Cgray method)

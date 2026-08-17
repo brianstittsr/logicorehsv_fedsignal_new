@@ -51,6 +51,7 @@ import {
 import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { COLLECTIONS } from "@/lib/schema";
+import { clearSamGovConfigCache } from "@/lib/sam/samApiClient";
 
 interface ApiKeyConfig {
   id: string;
@@ -72,8 +73,7 @@ const apiConfigs: ApiKeyConfig[] = [
     icon: Building2,
     keyField: "API Key",
     additionalFields: [
-      { name: "apiKey", label: "API Key", placeholder: "your-sam-api-key" },
-      { name: "userId", label: "User ID", placeholder: "user-id" },
+      { name: "serverUrl", label: "Server URL", placeholder: "https://c-gray-samgovapiserver.vercel.app" },
     ],
     status: "disconnected",
   },
@@ -130,7 +130,7 @@ export default function FedSignalSettingsPage() {
   const [apiKeys, setApiKeys] = useState<Record<string, Record<string, string>>>({
     "sam-gov": {
       apiKey: "SAM_API_KEY_XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      userId: "user-12345",
+      serverUrl: "https://c-gray-samgovapiserver.vercel.app",
     },
     "grants-gov": {
       apiKey: "GRANTS_API_KEY_XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -224,7 +224,7 @@ export default function FedSignalSettingsPage() {
             if (data.integrations.samGov) {
               loadedApiKeys["sam-gov"] = {
                 apiKey: data.integrations.samGov.apiKey || "",
-                userId: data.integrations.samGov.userId || "",
+                serverUrl: data.integrations.samGov.serverUrl || "https://c-gray-samgovapiserver.vercel.app",
               };
             }
             if (data.integrations.grantsGov) {
@@ -331,7 +331,7 @@ export default function FedSignalSettingsPage() {
         integrations: {
           samGov: {
             apiKey: apiKeys["sam-gov"]?.apiKey || "",
-            userId: apiKeys["sam-gov"]?.userId || "",
+            serverUrl: apiKeys["sam-gov"]?.serverUrl || "https://c-gray-samgovapiserver.vercel.app",
             status: testingStatus["sam-gov"] === "success" ? "connected" : "disconnected",
           },
           grantsGov: {
@@ -365,6 +365,8 @@ export default function FedSignalSettingsPage() {
       };
 
       await setDoc(docRef, settingsData, { merge: true });
+      // Clear proxy config cache so new settings take effect immediately
+      clearSamGovConfigCache();
       setHasChanges(false);
       alert("Settings saved successfully!");
     } catch (error) {
@@ -390,12 +392,36 @@ export default function FedSignalSettingsPage() {
   const testConnection = async (configId: string) => {
     setTestingStatus(prev => ({ ...prev, [configId]: "testing" }));
 
-    // Simulate API test
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setTestingStatus(prev => ({
-      ...prev,
-      [configId]: Math.random() > 0.3 ? "success" : "error"
-    }));
+    if (configId === "sam-gov") {
+      try {
+        const apiKey = apiKeys["sam-gov"]?.apiKey || "";
+        const serverUrl = apiKeys["sam-gov"]?.serverUrl || "https://c-gray-samgovapiserver.vercel.app";
+        
+        if (!apiKey) {
+          setTestingStatus(prev => ({ ...prev, [configId]: "error" }));
+          return;
+        }
+
+        const response = await fetch("/api/sam/test-connection", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ apiKey, serverUrl }),
+        });
+
+        const result = await response.json();
+        setTestingStatus(prev => ({ ...prev, [configId]: result.success ? "success" : "error" }));
+      } catch (error) {
+        console.error("SAM.gov test connection failed:", error);
+        setTestingStatus(prev => ({ ...prev, [configId]: "error" }));
+      }
+    } else {
+      // Simulate API test for other integrations
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setTestingStatus(prev => ({
+        ...prev,
+        [configId]: Math.random() > 0.3 ? "success" : "error"
+      }));
+    }
   };
 
   if (loading) {

@@ -1266,6 +1266,12 @@ export interface PlatformSettingsDoc {
       status: "connected" | "disconnected" | "error";
       lastTested?: Timestamp;
     };
+    samGov?: {
+      apiKey?: string;
+      serverUrl?: string;
+      status: "connected" | "disconnected" | "error";
+      lastTested?: Timestamp;
+    };
   };
   // LLM Configuration
   llmConfig?: {
