@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, FileText, Calendar, DollarSign, Filter, Plus, AlertCircle, CheckCircle2, Clock, TrendingUp, Users, Paperclip, Grid, List, Image as ImageIcon, HelpCircle } from "lucide-react";
+import { Search, FileText, Calendar, DollarSign, Filter, Plus, AlertCircle, CheckCircle2, Clock, TrendingUp, Users, Paperclip, Grid, List, Image as ImageIcon, HelpCircle, Download } from "lucide-react";
 import Image from "next/image";
 import { Walkthrough, WalkthroughButton } from "@/components/ui/walkthrough";
 

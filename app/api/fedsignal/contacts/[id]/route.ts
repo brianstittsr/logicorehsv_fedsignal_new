@@ -13,10 +13,11 @@ import { contactUpdateSchema } from "@/lib/fedsignal/validators";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const contact = await getDocument(FSCOLLECTIONS.CONTACTS, params.id);
+    const { id } = await params;
+    const contact = await getDocument(FSCOLLECTIONS.CONTACTS, id);
 
     if (!contact) {
       return NextResponse.json(
@@ -44,9 +45,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
 
     // Validate request body
@@ -58,7 +60,7 @@ export async function PUT(
       );
     }
 
-    const contact = await updateDocument(FSCOLLECTIONS.CONTACTS, params.id, validationResult.data);
+    const contact = await updateDocument(FSCOLLECTIONS.CONTACTS, id, validationResult.data);
 
     return NextResponse.json({
       success: true,
@@ -79,10 +81,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await deleteDocument(FSCOLLECTIONS.CONTACTS, params.id, true);
+    const { id } = await params;
+    await deleteDocument(FSCOLLECTIONS.CONTACTS, id, true);
 
     return NextResponse.json({
       success: true,

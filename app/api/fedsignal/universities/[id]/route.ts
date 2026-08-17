@@ -13,10 +13,11 @@ import { universityUpdateSchema } from "@/lib/fedsignal/validators";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const university = await getDocument(FSCOLLECTIONS.UNIVERSITIES, params.id);
+    const { id } = await params;
+    const university = await getDocument(FSCOLLECTIONS.UNIVERSITIES, id);
 
     if (!university) {
       return NextResponse.json(
@@ -44,9 +45,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
 
     // Validate request body
@@ -58,7 +60,7 @@ export async function PUT(
       );
     }
 
-    const university = await updateDocument(FSCOLLECTIONS.UNIVERSITIES, params.id, validationResult.data);
+    const university = await updateDocument(FSCOLLECTIONS.UNIVERSITIES, id, validationResult.data);
 
     return NextResponse.json({
       success: true,
@@ -79,10 +81,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await deleteDocument(FSCOLLECTIONS.UNIVERSITIES, params.id, true);
+    const { id } = await params;
+    await deleteDocument(FSCOLLECTIONS.UNIVERSITIES, id, true);
 
     return NextResponse.json({
       success: true,

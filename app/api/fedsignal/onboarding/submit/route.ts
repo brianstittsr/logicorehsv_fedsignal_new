@@ -3,6 +3,14 @@ import { adminDb } from "@/lib/firebase-admin";
 
 export async function POST(request: NextRequest) {
   try {
+    if (!adminDb) {
+      return NextResponse.json(
+        { error: "Database not initialized" },
+        { status: 500 }
+      );
+    }
+    const db = adminDb;
+
     const { formData } = await request.json();
     
     if (!formData || !formData.universityName || !formData.primaryContactEmail) {
@@ -67,14 +75,14 @@ export async function POST(request: NextRequest) {
     };
 
     // Save to Firestore
-    const docRef = adminDb.collection("fs_university_profiles").doc(registrationId);
+    const docRef = db.collection("fs_university_profiles").doc(registrationId);
     await docRef.set(universityProfile);
 
     // Create welcome email records for each team member
     const emailPromises = formData.teamMembers.map(async (member: any) => {
       if (!member.email) return;
       
-      await adminDb.collection("fs_email_queue").add({
+      await db.collection("fs_email_queue").add({
         type: "welcome",
         to: member.email,
         universityId: registrationId,
@@ -88,7 +96,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create initial AI recommendations job
-    await adminDb.collection("fs_recommendation_jobs").add({
+    await db.collection("fs_recommendation_jobs").add({
       universityId: registrationId,
       type: "initial_setup",
       status: "pending",

@@ -12,7 +12,6 @@ const manrope = Manrope({
 const dmSans = DM_Sans({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
