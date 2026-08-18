@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useMockDataStore } from "@/lib/stores/mock-data";
 import { ArrowLeft, Edit, Trash2, Save, X, Bell, Send, Eye } from "lucide-react";
 
 // Sample alert data
@@ -42,7 +43,8 @@ const iconOptions = ["⚡", "📈", "🤝", "🏆", "📋", "🎓", "🔔", "�
 export default function AlertDetailPage() {
   const params = useParams();
   const alertId = params.id as string;
-  
+  const showMockData = useMockDataStore((state) => state.showMockData);
+
   const [isEditing, setIsEditing] = useState(false);
   const [alertData, setAlertData] = useState(sampleAlert);
   const [editedAlert, setEditedAlert] = useState(sampleAlert);
@@ -66,6 +68,27 @@ export default function AlertDetailPage() {
   const getPriorityStyle = (priority: string) => {
     return priorityOptions.find(p => p.value === priority)?.color || "";
   };
+
+  if (!showMockData) {
+    return (
+      <div className="space-y-6 max-w-4xl">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/fedsignal/alerts">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to Alerts
+            </Link>
+          </Button>
+          <h1 className="text-2xl font-bold">Alert Not Available</h1>
+        </div>
+        <Card>
+          <CardContent className="p-8 text-center text-muted-foreground">
+            <p>Mock data is disabled. Enable it in Platform Settings to view this sample alert.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">

@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useMockDataStore } from "@/lib/stores/mock-data";
 import { ArrowLeft, Plus, Search } from "lucide-react";
 
 interface AlertRow {
@@ -40,7 +41,8 @@ function getPriorityColor(priority: string): "destructive" | "default" | "second
 
 export default function FSAlertsAdminPage() {
   const [search, setSearch] = useState("");
-  const filtered = sampleAlerts.filter(
+  const showMockData = useMockDataStore((state) => state.showMockData);
+  const filtered = (showMockData ? sampleAlerts : []).filter(
     (a) => a.title.toLowerCase().includes(search.toLowerCase()) || a.description.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -70,10 +72,11 @@ export default function FSAlertsAdminPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+      {showMockData ? (
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/40">
                   <th className="text-center px-3 py-3 font-medium w-12"></th>
@@ -117,6 +120,13 @@ export default function FSAlertsAdminPage() {
           </div>
         </CardContent>
       </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-8 text-center text-muted-foreground">
+            <p>Mock data is disabled. Enable it in Platform Settings to view sample alerts.</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

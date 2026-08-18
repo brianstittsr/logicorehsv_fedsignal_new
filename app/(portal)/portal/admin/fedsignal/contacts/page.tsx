@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useMockDataStore } from "@/lib/stores/mock-data";
 import { ArrowLeft, Plus, Search } from "lucide-react";
 
 interface ContactRow {
@@ -35,7 +36,8 @@ const typeColors: Record<string, string> = {
 
 export default function FSContactsAdminPage() {
   const [search, setSearch] = useState("");
-  const filtered = sampleContacts.filter(
+  const showMockData = useMockDataStore((state) => state.showMockData);
+  const filtered = (showMockData ? sampleContacts : []).filter(
     (c) => c.name.toLowerCase().includes(search.toLowerCase()) || c.organization.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -65,9 +67,10 @@ export default function FSContactsAdminPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+      {showMockData ? (
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/40">
@@ -104,6 +107,13 @@ export default function FSContactsAdminPage() {
           </div>
         </CardContent>
       </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-8 text-center text-muted-foreground">
+            <p>Mock data is disabled. Enable it in Platform Settings to view sample contacts.</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

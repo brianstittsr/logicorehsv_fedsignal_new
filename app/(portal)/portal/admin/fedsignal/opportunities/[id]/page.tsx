@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Edit, Trash2, Save, X, ExternalLink, Calendar, DollarSign, Building, Tag, FileText } from "lucide-react";
 import { FSOpportunityDoc, TagVariant } from "@/lib/fedsignal/types";
+import { useMockDataStore } from "@/lib/stores/mock-data";
 
 // Sample opportunity data
 const sampleOpportunity: Partial<FSOpportunityDoc> & { id: string } = {
@@ -50,7 +51,8 @@ const tagStyles: Record<TagVariant, string> = {
 export default function OpportunityDetailPage() {
   const params = useParams();
   const opportunityId = params.id as string;
-  
+  const showMockData = useMockDataStore((state) => state.showMockData);
+
   const [isEditing, setIsEditing] = useState(false);
   const [opportunity, setOpportunity] = useState(sampleOpportunity);
   const [editedOpportunity, setEditedOpportunity] = useState(sampleOpportunity);
@@ -89,6 +91,27 @@ export default function OpportunityDetailPage() {
     if (score >= 70) return "text-amber-700 bg-amber-50 border-amber-300";
     return "text-red-700 bg-red-50 border-red-300";
   };
+
+  if (!showMockData) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/fedsignal/opportunities">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to Opportunities
+            </Link>
+          </Button>
+          <h1 className="text-2xl font-bold">Opportunity Not Available</h1>
+        </div>
+        <Card>
+          <CardContent className="p-8 text-center text-muted-foreground">
+            <p>Mock data is disabled. Enable it in Platform Settings to view this sample opportunity.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

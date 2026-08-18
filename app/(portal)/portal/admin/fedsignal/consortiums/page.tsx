@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useMockDataStore } from "@/lib/stores/mock-data";
 import { ArrowLeft, Plus } from "lucide-react";
 
 interface ConsortiumRow {
@@ -61,6 +62,8 @@ function getStatusColor(status: string): "default" | "secondary" | "outline" {
 }
 
 export default function FSConsortiumsAdminPage() {
+  const showMockData = useMockDataStore((state) => state.showMockData);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -82,8 +85,9 @@ export default function FSConsortiumsAdminPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sampleConsortiums.map((consortium) => (
+      {showMockData ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sampleConsortiums.map((consortium) => (
           <Card key={consortium.id} className="hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between mb-3">
@@ -117,8 +121,15 @@ export default function FSConsortiumsAdminPage() {
               </Button>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-8 text-center text-muted-foreground">
+            <p>Mock data is disabled. Enable it in Platform Settings to view sample consortiums.</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

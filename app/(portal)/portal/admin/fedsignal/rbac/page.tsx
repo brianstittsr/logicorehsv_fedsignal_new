@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useMockDataStore } from "@/lib/stores/mock-data";
 import { ArrowLeft, Plus, Save, Shield, UserCog, Users, Lock, Mail, CheckCircle2, AlertTriangle } from "lucide-react";
 
 // FedSignal RBAC Role definitions
@@ -75,6 +76,7 @@ const authSettings = {
 };
 
 export default function FSRBACPage() {
+  const showMockData = useMockDataStore((state) => state.showMockData);
   const [activeTab, setActiveTab] = useState<"roles" | "users" | "auth">("roles");
   const [settings, setSettings] = useState(authSettings);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -187,7 +189,7 @@ export default function FSRBACPage() {
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-lg font-semibold">FedSignal Users</h2>
-              <p className="text-sm text-muted-foreground">{sampleUsers.length} total users across all universities</p>
+              <p className="text-sm text-muted-foreground">{showMockData ? sampleUsers.length : 0} total users across all universities</p>
             </div>
             <Button onClick={() => setShowInviteModal(true)}>
               <Mail className="h-4 w-4 mr-2" />
@@ -209,7 +211,7 @@ export default function FSRBACPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sampleUsers.map((user) => {
+                  {(showMockData ? sampleUsers : []).map((user) => {
                     const role = fsRoles.find((r) => r.id === user.role);
                     return (
                       <tr key={user.id} className="border-b hover:bg-muted/20">
@@ -236,6 +238,13 @@ export default function FSRBACPage() {
                       </tr>
                     );
                   })}
+                  {(!showMockData) && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                        Mock data is disabled. Enable it in Platform Settings to view sample users.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </CardContent>

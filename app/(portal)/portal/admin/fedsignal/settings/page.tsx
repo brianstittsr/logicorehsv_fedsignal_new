@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useMockDataStore } from "@/lib/stores/mock-data";
 import { ArrowLeft, Save, Search, Settings, Brain } from "lucide-react";
 
 export default function FSSettingsAdminPage() {
@@ -26,6 +28,8 @@ export default function FSSettingsAdminPage() {
     llmProvider: "openai",
     enableSamAgent: true,
   });
+
+  const { showMockData, setShowMockData } = useMockDataStore();
 
   return (
     <div className="space-y-6">
@@ -131,6 +135,29 @@ export default function FSSettingsAdminPage() {
                 value={settings.phaseBannerMessage}
                 onChange={(e) => setSettings({ ...settings, phaseBannerMessage: e.target.value })}
                 className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background min-h-[80px] resize-y"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Mock Data */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Mock Data</CardTitle>
+            <CardDescription>Toggle sample data in the admin panel</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="showMockData" className="text-base font-medium">Show Mock Data</Label>
+                <p className="text-xs text-muted-foreground">
+                  When disabled, admin pages display empty states instead of sample records.
+                </p>
+              </div>
+              <Switch
+                id="showMockData"
+                checked={showMockData}
+                onCheckedChange={setShowMockData}
               />
             </div>
           </CardContent>

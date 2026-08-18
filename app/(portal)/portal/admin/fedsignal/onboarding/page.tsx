@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { useMockDataStore } from "@/lib/stores/mock-data";
 import { ArrowLeft, Plus, Mail, CheckCircle2, Clock, AlertCircle, GraduationCap, Send, Eye, ChevronRight } from "lucide-react";
 
 interface OnboardingRecord {
@@ -112,6 +113,23 @@ function getInvitationStatusColor(status: string) {
 }
 
 export default function FSOnboardingPage() {
+  const showMockData = useMockDataStore((state) => state.showMockData);
+  const displayedOnboardings = useMemo(() => (showMockData ? sampleOnboardings : []), [showMockData]);
+  const stats = useMemo(() => {
+    const inProgress = displayedOnboardings.filter((o) => o.status === "in_progress").length;
+    const completed = displayedOnboardings.filter((o) => o.status === "completed").length;
+    const pendingInvites = displayedOnboardings.reduce(
+      (sum, o) => sum + o.teamMembers.filter((m) => m.invitationStatus === "pending").length,
+      0
+    );
+    return [
+      { label: "In Progress", value: String(inProgress), color: "text-blue-600" },
+      { label: "Completed", value: String(completed), color: "text-green-600" },
+      { label: "Pending Invites", value: String(pendingInvites), color: "text-amber-600" },
+      { label: "Total Universities", value: String(displayedOnboardings.length), color: "text-purple-600" },
+    ];
+  }, [displayedOnboardings]);
+
   const [selectedOnboarding, setSelectedOnboarding] = useState<OnboardingRecord | null>(null);
   const [newInviteEmail, setNewInviteEmail] = useState("");
   const [newInviteName, setNewInviteName] = useState("");
@@ -149,12 +167,7 @@ export default function FSOnboardingPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
-        {[
-          { label: "In Progress", value: "2", color: "text-blue-600" },
-          { label: "Completed", value: "1", color: "text-green-600" },
-          { label: "Pending Invites", value: "3", color: "text-amber-600" },
-          { label: "Total Universities", value: "3", color: "text-purple-600" },
-        ].map((stat) => (
+        {stats.map((stat) => (
           <Card key={stat.label}>
             <CardContent className="pt-6">
               <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
@@ -168,7 +181,8 @@ export default function FSOnboardingPage() {
         {/* Onboarding List */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Active Onboardings</h2>
-          {sampleOnboardings.map((onboarding) => (
+          {showMockData ? (
+            displayedOnboardings.map((onboarding) => (
             <Card
               key={onboarding.id}
               className={`cursor-pointer transition-all ${selectedOnboarding?.id === onboarding.id ? "ring-2 ring-primary" : "hover:shadow-md"}`}
@@ -208,7 +222,14 @@ export default function FSOnboardingPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          ))
+          ) : (
+            <Card>
+              <CardContent className="p-8 text-center text-muted-foreground">
+                <p>Mock data is disabled. Enable it in Platform Settings to view sample onboardings.</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Detail View */}
